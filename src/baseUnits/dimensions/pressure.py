@@ -1,24 +1,19 @@
 """
 Defines all Pressure units.
-
-The base unit for Pressure in a (N, mm) system is (N / mm^2),
-which is exactly equivalent to 'MPa' (MegaPascal).
-
-This file defines the Pressure dimension as Force / Length^2.
+Dimension: Mass / (Length * Time^2)
+Base Unit: MPa (which is N/mm^2)
 """
-
 # Import the base Unit class
 from ..units import Unit, register_base_unit
 # Import the Dimension helper class
 from ..dimension import Dimension
 
 # 1. Define the compound dimension for Pressure
-#    This is the key fix: Force / Length^2
-PRESSURE_DIMENSION = Dimension("Force") / (Dimension("Length") ** 2)
+#    Pressure = Force / Length^2 = (Mass * Length / Time^2) / Length^2
+PRESSURE_DIMENSION = Dimension("Mass") / (Dimension("Length") * (Dimension("Time") ** 2))
 
 # 2. Define the base unit for this dimension
-#    Note: 'MPa' is (N / mm^2). Our base units are N and mm,
-#    so the factor for MPa is 1.0.
+#    Base unit is N/mm^2 = MPa
 MPa = register_base_unit(
     Unit(name="MegaPascal", symbol="MPa", dimension=PRESSURE_DIMENSION, factor=1.0)
 )

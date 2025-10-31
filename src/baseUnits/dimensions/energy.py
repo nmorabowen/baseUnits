@@ -1,25 +1,22 @@
 """
 Defines all Energy units.
-
-The base unit for Energy in a (N, mm) system is (N * mm),
-which is equivalent to 'mJ' (milliJoule).
-
-This file defines the Energy dimension as Force * Length.
+Dimension: Mass * Length^2 / Time^2
+Base Unit: mJ (which is N*mm)
 """
-
 # Import the base Unit class
 from ..units import Unit, register_base_unit
 # Import the Dimension helper class
 from ..dimension import Dimension
 
 # 1. Define the compound dimension for Energy
-ENERGY_DIMENSION = register_base_unit(
-    Dimension("Force") * Dimension("Length")
-)
+#    Energy = Force * Length = (Mass * Length / Time^2) * Length
+ENERGY_DIMENSION = Dimension("Mass") * (Dimension("Length") ** 2) / (Dimension("Time") ** 2)
 
 # 2. Define the base unit for this dimension
-#    Base unit is (N * mm) = mJ
-mJ = Unit(name="milliJoule", symbol="mJ", dimension=ENERGY_DIMENSION, factor=1.0)
+#    Base unit is N*mm = mJ
+mJ = register_base_unit(
+    Unit(name="milliJoule", symbol="mJ", dimension=ENERGY_DIMENSION, factor=1.0)
+)
 
 # 3. Define other Energy units relative to the base (mJ)
 J = Unit(name="Joule", symbol="J", dimension=ENERGY_DIMENSION, factor=1000.0)

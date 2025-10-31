@@ -13,10 +13,6 @@ class Dimension:
     def __init__(self, base_dims: dict[str, float | int] | str):
         """
         Initializes a Dimension.
-        
-        Args:
-            base_dims: A string for a simple dimension (e.g., "Length") or
-                       a dict for a compound one (e.g., {"Length": 1, "Time": -1}).
         """
         if isinstance(base_dims, str):
             # Simple dimension like "Length"
@@ -26,6 +22,11 @@ class Dimension:
             self._dims = {k: v for k, v in base_dims.items() if v != 0}
         else:
             raise TypeError(f"Cannot create Dimension from {type(base_dims)}")
+
+    @property
+    def components(self) -> dict[str, float | int]:
+        """Returns the dictionary of base dimensions and their exponents."""
+        return self._dims
 
     @property
     def is_dimensionless(self) -> bool:
@@ -43,11 +44,22 @@ class Dimension:
             return False
         return self._dims == other._dims
 
+    # --- NEW METHOD ---
+    def __hash__(self) -> int:
+        """
+        Makes the Dimension object hashable so it can be used as a
+        dictionary key.
+        
+        We do this by creating an immutable, sorted tuple of its
+        internal items and hashing that.
+        """
+        sorted_items = tuple(sorted(self._dims.items()))
+        return hash(sorted_items)
+    # --- END NEW ---
+
     def __mul__(self, other: Dimension) -> Dimension:
         """
         Multiplies two dimensions (adds their exponents).
-        e.g., Length * Time -> {"Length": 1, "Time": 1}
-        e.g., Length * Length -> {"Length": 2}
         """
         new_dims = defaultdict(int, self._dims)
         for dim, exp in other._dims.items():
@@ -57,7 +69,6 @@ class Dimension:
     def __truediv__(self, other: Dimension) -> Dimension:
         """
         Divides two dimensions (subtracts their exponents).
-        e.g., Length / Time -> {"Length": 1, "Time": -1}
         """
         new_dims = defaultdict(int, self._dims)
         for dim, exp in other._dims.items():
@@ -67,8 +78,6 @@ class Dimension:
     def __pow__(self, power: float | int) -> Dimension:
         """
         Raises a dimension to a power (multiplies all exponents).
-        e.g., Length**2 -> {"Length": 2}
-        e.g., (Length/Time)**2 -> {"Length": 2, "Time": -2}
         """
         new_dims = {dim: exp * power for dim, exp in self._dims.items()}
         return Dimension(new_dims)
