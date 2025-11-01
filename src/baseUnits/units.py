@@ -1,12 +1,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Dict
 
+# Import the Dimension class
 from .dimension import Dimension
 
 if TYPE_CHECKING:
     from .quantity import Quantity
 
-# --- NEW: Base Unit Registry ---
+# --- Base Unit Registry ---
 # This private dictionary will store {Dimension: Unit}
 # e.g., {Dimension('Length'): mm, Dimension('Force'): N}
 _BASE_UNIT_REGISTRY: Dict[Dimension, 'Unit'] = {}
@@ -14,28 +15,56 @@ _BASE_UNIT_REGISTRY: Dict[Dimension, 'Unit'] = {}
 def register_base_unit(unit_object: 'Unit') -> 'Unit':
     """
     Decorator/function to register a Unit as the base for its dimension.
+    
+    This function is called from within each dimensions/ file.
     """
     dim = unit_object.dimension
     if dim in _BASE_UNIT_REGISTRY:
-        # This check is useful for debugging
         raise ValueError(f"Base unit for {dim!r} is already registered as {_BASE_UNIT_REGISTRY[dim]}")
     _BASE_UNIT_REGISTRY[dim] = unit_object
-    return unit_object # Return the unit so it can be used inline
+    return unit_object 
 
 def get_base_unit(dimension: Dimension) -> 'Unit':
     """
     Gets the registered base unit for a given dimension.
+    
+    If the dimension is compound, it builds a new compound
+    base unit from the simple base units.
     """
-    if dimension not in _BASE_UNIT_REGISTRY:
-        raise KeyError(f"No base unit registered for dimension {dimension!r}")
-    return _BASE_UNIT_REGISTRY[dimension]
-# --- END NEW ---
+    # 1. Check if it's a simple, registered dimension (fast path)
+    if dimension in _BASE_UNIT_REGISTRY:
+        return _BASE_UNIT_REGISTRY[dimension]
+
+    # 2. If not, it must be compound. Build it.
+    if len(dimension.components) > 0:
+        new_base_unit = None
+        for base_dim, exponent in dimension.components.items():
+            # Look up the base unit for each *component* (e.g., 'Mass')
+            # We create a new Dimension object for the lookup
+            component_base_unit = _BASE_UNIT_REGISTRY.get(Dimension(base_dim))
+            
+            if not component_base_unit:
+                raise KeyError(f"No base unit registered for component dimension '{base_dim}'")
+            
+            # Apply the exponent (e.g., mm**-2)
+            part = component_base_unit ** exponent
+            
+            # Multiply them together (e.g., N * mm**-2)
+            if new_base_unit is None:
+                new_base_unit = part
+            else:
+                new_base_unit = new_base_unit * part
+        
+        if new_base_unit is not None:
+            return new_base_unit
+
+    # 3. If we failed to find or build it, raise an error
+    raise KeyError(f"No base unit registered for dimension {dimension!r}")
 
 
 class Unit:
     """
     Represents the definition of a physical unit.
-    ...
     """
 
     def __init__(self, name: str, symbol: str, dimension: Dimension | str, factor: float):
