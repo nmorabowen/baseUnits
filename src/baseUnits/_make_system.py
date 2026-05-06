@@ -1,25 +1,38 @@
 """Factory that builds a consistent unit system as a SimpleNamespace of floats."""
 
+from __future__ import annotations
+
 import math
 from types import SimpleNamespace
 
 from . import _factors as _f
 
 
-def make_system(length: str, force: str, time: str) -> SimpleNamespace:
-    """Build a consistent unit system from a length/force/time triple.
+def make_system(
+    *,
+    length: str,
+    time: str,
+    force: str | None = None,
+    mass: str | None = None,
+) -> SimpleNamespace:
+    """Build a consistent unit system from L-T plus exactly one of force or mass.
 
-    Mass is *derived* from the chosen primitives via ``M = F * T**2 / L`` so
-    that Newton's second law holds without spurious factors. Pressure, energy,
-    power, density, and unit-weight bases follow the same construction.
+    Pick three primitives — length, time, and *either* force or mass — and the
+    fourth is derived so that Newton's second law holds without spurious
+    factors (``F = M * L / T**2``). Pressure, energy, power, density, and
+    unit-weight bases follow the same construction.
 
     Each named unit in :mod:`baseUnits._factors` is then divided by its
     dimension's base SI value to produce a float you multiply scalars by.
 
     Args:
         length: Key in ``_factors.LENGTH`` (e.g. ``"mm"``, ``"m"``, ``"inches"``).
-        force: Key in ``_factors.FORCE`` (e.g. ``"N"``, ``"kN"``, ``"kip"``).
         time: Key in ``_factors.TIME`` (typically ``"s"``).
+        force: Key in ``_factors.FORCE`` (e.g. ``"N"``, ``"kN"``, ``"kip"``).
+            Provide this for the F-L-T mental model. Mutually exclusive with ``mass``.
+        mass: Key in ``_factors.MASS`` (e.g. ``"kg"``, ``"gram"``, ``"tonne"``).
+            Provide this for the L-M-T (physics/SI) mental model. Mutually
+            exclusive with ``force``.
 
     Returns:
         A :class:`types.SimpleNamespace` with one float attribute per named
@@ -27,22 +40,34 @@ def make_system(length: str, force: str, time: str) -> SimpleNamespace:
         label of the system).
 
     Raises:
-        KeyError: If any of ``length``, ``force``, or ``time`` is not a known
-            unit name in ``_factors``.
+        ValueError: If neither or both of ``force`` and ``mass`` are given.
+        KeyError: If any name is not a known unit in ``_factors``.
 
     Example:
-        >>> sys = make_system("mm", "N", "s")
-        >>> sys.m
-        1000.0
+        >>> sys = make_system(length="mm", force="N", time="s")
         >>> sys.MPa
         1.0
         >>> sys.BASE
         'N-mm-tonne-s'
+
+        >>> mks = make_system(length="m", mass="kg", time="s")
+        >>> mks.N
+        1.0
+        >>> mks.BASE
+        'N-m-kg-s'
     """
+    if (force is None) == (mass is None):
+        raise ValueError("Pass exactly one of `force` or `mass`.")
+
     L = _f.LENGTH[length]
-    F = _f.FORCE[force]
     T = _f.TIME[time]
-    M = F * T**2 / L
+    if force is not None:
+        F = _f.FORCE[force]
+        M = F * T**2 / L
+    else:
+        M = _f.MASS[mass]
+        F = M * L / T**2
+
     P = F / L**2
     E = F * L
     Pw = E / T
@@ -75,6 +100,8 @@ def make_system(length: str, force: str, time: str) -> SimpleNamespace:
 
     ns.g = 9.80665 * T**2 / L
 
-    mass_name = next((n for n, v in _f.MASS.items() if math.isclose(v, M)), None)
-    ns.BASE = f"{force}-{length}-{mass_name}-{time}" if mass_name else f"{force}-{length}-{time}"
+    force_name = force or next((n for n, v in _f.FORCE.items() if math.isclose(v, F)), None)
+    mass_name = mass or next((n for n, v in _f.MASS.items() if math.isclose(v, M)), None)
+    parts = [p for p in (force_name, length, mass_name, time) if p]
+    ns.BASE = "-".join(parts)
     return ns

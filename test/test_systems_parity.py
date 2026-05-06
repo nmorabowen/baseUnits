@@ -21,3 +21,36 @@ def test_one_kn_across_systems():
     assert 1 * s_Nmm.kN == 1000.0
     assert 1 * s_Nm.kN == 1000.0
     assert 1 * s_kNm.kN == 1.0
+
+
+def test_mks_equals_N_m_for_every_unit():
+    """L-M-T and F-L-T paths must produce numerically identical systems."""
+    import baseUnits._factors as _f
+    import baseUnits.systems.mks as mks
+    import baseUnits.systems.N_m as nm
+
+    for dim in (
+        "LENGTH",
+        "FORCE",
+        "MASS",
+        "TIME",
+        "PRESSURE",
+        "ENERGY",
+        "POWER",
+        "DENSITY",
+        "UNIT_WEIGHT",
+        "ANGLE",
+        "TEMPERATURE",
+    ):
+        for name in getattr(_f, dim):
+            assert getattr(mks, name) == pytest.approx(getattr(nm, name), rel=1e-15), name
+
+
+def test_cgs_force_base():
+    """In CGS, the dyne is the natural force unit (M*L/T^2 with M=g, L=cm)."""
+    import baseUnits.systems.cgs as cgs
+
+    assert cgs.dyne == 1.0
+    assert pytest.approx(1e5) == cgs.N  # 1 N = 1e5 dyne
+    assert cgs.Pa == pytest.approx(10.0)  # 1 Pa = 10 baryes
+    assert cgs.g == pytest.approx(980.665)  # standard gravity in cm/s^2

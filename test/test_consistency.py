@@ -25,6 +25,10 @@ SYSTEMS = [
     ("N_m", "m", "N", "s"),
     ("kN_m", "m", "kN", "s"),
     ("kip_in", "inches", "kip", "s"),
+    # `mks` is built via the L-M-T path; numerically identical to N_m.
+    ("mks", "m", "N", "s"),
+    # `cgs` derives force from mass; force comes out as dyne.
+    ("cgs", "cm", "dyne", "s"),
 ]
 
 
@@ -91,6 +95,8 @@ NATURAL_BASES = {
     ("N", "m"): ("Pa", "J", "W"),
     ("kN", "m"): ("kPa", "kJ", "kW"),
     ("kip", "inches"): ("ksi", None, None),
+    # cgs natural derived bases (barye, erg, erg/s) are not in the factor table.
+    ("dyne", "cm"): (None, None, None),
 }
 
 
@@ -98,7 +104,8 @@ NATURAL_BASES = {
 def test_natural_derived_bases_are_unity(sysname, L_name, F_name, T_name):
     sys = importlib.import_module(f"baseUnits.systems.{sysname}")
     p_name, e_name, w_name = NATURAL_BASES[(F_name, L_name)]
-    assert getattr(sys, p_name) == pytest.approx(1.0)
+    if p_name:
+        assert getattr(sys, p_name) == pytest.approx(1.0)
     if e_name:
         assert getattr(sys, e_name) == pytest.approx(1.0)
     if w_name:
