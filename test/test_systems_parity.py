@@ -46,6 +46,18 @@ def test_mks_equals_N_m_for_every_unit():
             assert getattr(mks, name) == pytest.approx(getattr(nm, name), rel=1e-15), name
 
 
+def test_kg_cm_s_basics():
+    """Length=cm, mass=kg, time=s. Derived force is 0.01 N, unnamed."""
+    import baseUnits.systems.kg_cm_s as g
+
+    assert g.cm == 1.0 and g.kg == 1.0 and g.s == 1.0
+    assert g.BASE == "cm-kg-s"
+    assert pytest.approx(100.0) == g.N  # 1 N = 100 system force units
+    assert g.m == pytest.approx(100.0)  # 1 m = 100 cm
+    assert g.MPa == pytest.approx(1e4)
+    assert g.g == pytest.approx(980.665)
+
+
 def test_kgf_m_weight_identity():
     """In gravitational kgf-m-s: 100 kg * g must equal exactly 100 kgf."""
     import baseUnits.systems.kgf_m as g
