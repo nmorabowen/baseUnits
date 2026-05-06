@@ -8,7 +8,7 @@ unit, so ``Pa = 10`` and ``MPa = 1e7`` in this system.
 
 from .._make_system import make_system as _make
 
-_ns = _make(length="cm", mass="gram", time="s")
+_ns = _make(length="cm", force="dyne", mass="gram", time="s")
 globals().update(_ns.__dict__)
 __all__ = [k for k in _ns.__dict__]
 del _make, _ns

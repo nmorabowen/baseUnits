@@ -18,6 +18,8 @@ Consequences worth knowing:
 
 from .._make_system import make_system as _make
 
+# Mass primitive is the hyl (~9.80665 kg); no popular short name in the
+# factor table, so we cannot pass mass="...".
 _ns = _make(length="m", force="kgf", time="s")
 globals().update(_ns.__dict__)
 __all__ = [k for k in _ns.__dict__]

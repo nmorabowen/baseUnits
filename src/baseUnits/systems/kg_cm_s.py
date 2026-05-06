@@ -15,6 +15,8 @@ Notable values in this system:
 
 from .._make_system import make_system as _make
 
+# Force primitive is the derived 0.01 N (= 1 kg*cm/s^2); it has no popular
+# short name in the factor table, so we cannot pass force="...".
 _ns = _make(length="cm", mass="kg", time="s")
 globals().update(_ns.__dict__)
 __all__ = [k for k in _ns.__dict__]

@@ -70,6 +70,26 @@ def test_kgf_m_weight_identity():
     assert g.kgf_cm2 == pytest.approx(1e4)
 
 
+def test_factory_validates_overspecified_system():
+    """Passing both force and mass: factory must verify F = M*L/T^2."""
+    from baseUnits._make_system import make_system
+
+    # Consistent: should succeed.
+    sys = make_system(length="mm", force="N", mass="tonne", time="s")
+    assert sys.BASE == "N-mm-tonne-s"
+
+    # Inconsistent: kg with N at length=mm gives derived M=tonne, not kg.
+    with pytest.raises(ValueError, match="Inconsistent system"):
+        make_system(length="mm", force="N", mass="kg", time="s")
+
+
+def test_factory_requires_force_or_mass():
+    from baseUnits._make_system import make_system
+
+    with pytest.raises(ValueError, match="at least one"):
+        make_system(length="m", time="s")
+
+
 def test_cgs_force_base():
     """In CGS, the dyne is the natural force unit (M*L/T^2 with M=g, L=cm)."""
     import baseUnits.systems.cgs as cgs
