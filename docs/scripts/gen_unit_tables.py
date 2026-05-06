@@ -47,6 +47,15 @@ SYSTEMS = [
         "physics/SI mental model where mass is a primitive and force is derived.",
     ),
     (
+        "kgf_m",
+        "kgf-m-s (gravitational MKS)",
+        "Engineering metric system with kgf as the force base. Mass is derived "
+        "and equals the **hyl** (technical mass unit, ~9.80665 kg). "
+        "Practical consequence: ``100 * kg * g`` equals exactly ``100`` (100 kgf), "
+        "matching the engineering convention where weight in kgf equals mass in kg "
+        "under standard gravity.",
+    ),
+    (
         "cgs",
         "dyne-cm-gram-s (CGS)",
         "Centimetre-gram-second. Force base is the dyne. Common in physics and "

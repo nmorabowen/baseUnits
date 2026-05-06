@@ -46,6 +46,18 @@ def test_mks_equals_N_m_for_every_unit():
             assert getattr(mks, name) == pytest.approx(getattr(nm, name), rel=1e-15), name
 
 
+def test_kgf_m_weight_identity():
+    """In gravitational kgf-m-s: 100 kg * g must equal exactly 100 kgf."""
+    import baseUnits.systems.kgf_m as g
+
+    assert g.kgf == 1.0
+    assert g.BASE == "kgf-m-s"
+    # The killer demo: a 100 kg mass weighs exactly 100 kgf.
+    assert (100 * g.kg) * g.g == pytest.approx(100.0, rel=1e-12)
+    # And kgf/cm^2 lands cleanly at 10_000 (kgf per m^2).
+    assert g.kgf_cm2 == pytest.approx(1e4)
+
+
 def test_cgs_force_base():
     """In CGS, the dyne is the natural force unit (M*L/T^2 with M=g, L=cm)."""
     import baseUnits.systems.cgs as cgs

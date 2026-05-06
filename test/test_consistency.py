@@ -29,6 +29,8 @@ SYSTEMS = [
     ("mks", "m", "N", "s"),
     # `cgs` derives force from mass; force comes out as dyne.
     ("cgs", "cm", "dyne", "s"),
+    # `kgf_m` — gravitational/engineering metric. Mass derived (hyl, no name).
+    ("kgf_m", "m", "kgf", "s"),
 ]
 
 
@@ -97,6 +99,8 @@ NATURAL_BASES = {
     ("kip", "inches"): ("ksi", None, None),
     # cgs natural derived bases (barye, erg, erg/s) are not in the factor table.
     ("dyne", "cm"): (None, None, None),
+    # kgf-m natural pressure (kgf/m^2) and energy (kgf*m) are not named units.
+    ("kgf", "m"): (None, None, None),
 }
 
 
