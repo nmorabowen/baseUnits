@@ -1745,15 +1745,16 @@ u.BASE
 
 
 </h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">make_system</span><span class="p">(</span><span class="n">length</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">make_system</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mass</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
 
-        <p>Build a consistent unit system from a length/force/time triple.</p>
-<p>Mass is <em>derived</em> from the chosen primitives via <code>M = F * T**2 / L</code> so
-that Newton's second law holds without spurious factors. Pressure, energy,
-power, density, and unit-weight bases follow the same construction.</p>
+        <p>Build a consistent unit system from L-T plus exactly one of force or mass.</p>
+<p>Pick three primitives — length, time, and <em>either</em> force or mass — and the
+fourth is derived so that Newton's second law holds without spurious
+factors (<code>F = M * L / T**2</code>). Pressure, energy, power, density, and
+unit-weight bases follow the same construction.</p>
 <p>Each named unit in :mod:<code>baseUnits._factors</code> is then divided by its
 dimension's base SI value to produce a float you multiply scalars by.</p>
 
@@ -1787,22 +1788,6 @@ dimension's base SI value to produce a float you multiply scalars by.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>force</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Key in <code>_factors.FORCE</code> (e.g. <code>"N"</code>, <code>"kN"</code>, <code>"kip"</code>).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
                 <code>time</code>
             </td>
             <td>
@@ -1815,6 +1800,41 @@ dimension's base SI value to produce a float you multiply scalars by.</p>
             </td>
             <td>
                 <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>force</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Key in <code>_factors.FORCE</code> (e.g. <code>"N"</code>, <code>"kN"</code>, <code>"kip"</code>).
+Provide this for the F-L-T mental model. Mutually exclusive with <code>mass</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>mass</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Key in <code>_factors.MASS</code> (e.g. <code>"kg"</code>, <code>"gram"</code>, <code>"tonne"</code>).
+Provide this for the L-M-T (physics/SI) mental model. Mutually
+exclusive with <code>force</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -1875,12 +1895,21 @@ dimension's base SI value to produce a float you multiply scalars by.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If neither or both of <code>force</code> and <code>mass</code> are given.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                   <code><span title="KeyError">KeyError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If any of <code>length</code>, <code>force</code>, or <code>time</code> is not a known
-unit name in <code>_factors</code>.</p>
+                <p>If any name is not a known unit in <code>_factors</code>.</p>
               </div>
             </td>
           </tr>
@@ -1893,13 +1922,16 @@ unit name in <code>_factors</code>.</p>
   <blockquote>
 <blockquote>
 <blockquote>
-<p>sys = make_system("mm", "N", "s")
-sys.m
-1000.0
+<p>sys = make_system(length="mm", force="N", time="s")
 sys.MPa
 1.0
 sys.BASE
 'N-mm-tonne-s'</p>
+<p>mks = make_system(length="m", mass="kg", time="s")
+mks.N
+1.0
+mks.BASE
+'N-m-kg-s'</p>
 </blockquote>
 </blockquote>
 </blockquote>
@@ -1907,91 +1939,127 @@ sys.BASE
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/baseUnits/_make_system.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_system</span><span class="p">(</span><span class="n">length</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a consistent unit system from a length/force/time triple.</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 11</span>
+<span class="normal"> 12</span>
+<span class="normal"> 13</span>
+<span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_system</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">length</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">force</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">mass</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a consistent unit system from L-T plus exactly one of force or mass.</span>
 
-<span class="sd">    Mass is *derived* from the chosen primitives via ``M = F * T**2 / L`` so</span>
-<span class="sd">    that Newton&#39;s second law holds without spurious factors. Pressure, energy,</span>
-<span class="sd">    power, density, and unit-weight bases follow the same construction.</span>
+<span class="sd">    Pick three primitives — length, time, and *either* force or mass — and the</span>
+<span class="sd">    fourth is derived so that Newton&#39;s second law holds without spurious</span>
+<span class="sd">    factors (``F = M * L / T**2``). Pressure, energy, power, density, and</span>
+<span class="sd">    unit-weight bases follow the same construction.</span>
 
 <span class="sd">    Each named unit in :mod:`baseUnits._factors` is then divided by its</span>
 <span class="sd">    dimension&#39;s base SI value to produce a float you multiply scalars by.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        length: Key in ``_factors.LENGTH`` (e.g. ``&quot;mm&quot;``, ``&quot;m&quot;``, ``&quot;inches&quot;``).</span>
-<span class="sd">        force: Key in ``_factors.FORCE`` (e.g. ``&quot;N&quot;``, ``&quot;kN&quot;``, ``&quot;kip&quot;``).</span>
 <span class="sd">        time: Key in ``_factors.TIME`` (typically ``&quot;s&quot;``).</span>
+<span class="sd">        force: Key in ``_factors.FORCE`` (e.g. ``&quot;N&quot;``, ``&quot;kN&quot;``, ``&quot;kip&quot;``).</span>
+<span class="sd">            Provide this for the F-L-T mental model. Mutually exclusive with ``mass``.</span>
+<span class="sd">        mass: Key in ``_factors.MASS`` (e.g. ``&quot;kg&quot;``, ``&quot;gram&quot;``, ``&quot;tonne&quot;``).</span>
+<span class="sd">            Provide this for the L-M-T (physics/SI) mental model. Mutually</span>
+<span class="sd">            exclusive with ``force``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A :class:`types.SimpleNamespace` with one float attribute per named</span>
@@ -1999,22 +2067,34 @@ sys.BASE
 <span class="sd">        label of the system).</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        KeyError: If any of ``length``, ``force``, or ``time`` is not a known</span>
-<span class="sd">            unit name in ``_factors``.</span>
+<span class="sd">        ValueError: If neither or both of ``force`` and ``mass`` are given.</span>
+<span class="sd">        KeyError: If any name is not a known unit in ``_factors``.</span>
 
 <span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; sys = make_system(&quot;mm&quot;, &quot;N&quot;, &quot;s&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; sys.m</span>
-<span class="sd">        1000.0</span>
+<span class="sd">        &gt;&gt;&gt; sys = make_system(length=&quot;mm&quot;, force=&quot;N&quot;, time=&quot;s&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; sys.MPa</span>
 <span class="sd">        1.0</span>
 <span class="sd">        &gt;&gt;&gt; sys.BASE</span>
 <span class="sd">        &#39;N-mm-tonne-s&#39;</span>
+
+<span class="sd">        &gt;&gt;&gt; mks = make_system(length=&quot;m&quot;, mass=&quot;kg&quot;, time=&quot;s&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; mks.N</span>
+<span class="sd">        1.0</span>
+<span class="sd">        &gt;&gt;&gt; mks.BASE</span>
+<span class="sd">        &#39;N-m-kg-s&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">force</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">mass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pass exactly one of `force` or `mass`.&quot;</span><span class="p">)</span>
+
     <span class="n">L</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">LENGTH</span><span class="p">[</span><span class="n">length</span><span class="p">]</span>
-    <span class="n">F</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">FORCE</span><span class="p">[</span><span class="n">force</span><span class="p">]</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">TIME</span><span class="p">[</span><span class="n">time</span><span class="p">]</span>
-    <span class="n">M</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="n">T</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">L</span>
+    <span class="k">if</span> <span class="n">force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">FORCE</span><span class="p">[</span><span class="n">force</span><span class="p">]</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="n">T</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">L</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">MASS</span><span class="p">[</span><span class="n">mass</span><span class="p">]</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">M</span> <span class="o">*</span> <span class="n">L</span> <span class="o">/</span> <span class="n">T</span><span class="o">**</span><span class="mi">2</span>
+
     <span class="n">P</span> <span class="o">=</span> <span class="n">F</span> <span class="o">/</span> <span class="n">L</span><span class="o">**</span><span class="mi">2</span>
     <span class="n">E</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="n">L</span>
     <span class="n">Pw</span> <span class="o">=</span> <span class="n">E</span> <span class="o">/</span> <span class="n">T</span>
@@ -2047,8 +2127,10 @@ sys.BASE
 
     <span class="n">ns</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="mf">9.80665</span> <span class="o">*</span> <span class="n">T</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">L</span>
 
-    <span class="n">mass_name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_f</span><span class="o">.</span><span class="n">MASS</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">M</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">ns</span><span class="o">.</span><span class="n">BASE</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">force</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">mass_name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">mass_name</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">force</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">force_name</span> <span class="o">=</span> <span class="n">force</span> <span class="ow">or</span> <span class="nb">next</span><span class="p">((</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_f</span><span class="o">.</span><span class="n">FORCE</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">F</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">mass_name</span> <span class="o">=</span> <span class="n">mass</span> <span class="ow">or</span> <span class="nb">next</span><span class="p">((</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_f</span><span class="o">.</span><span class="n">MASS</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">M</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="n">force_name</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">mass_name</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">p</span><span class="p">]</span>
+    <span class="n">ns</span><span class="o">.</span><span class="n">BASE</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ns</span>
 </code></pre></div></td></tr></table></div>
             </details>

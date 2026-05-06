@@ -39,6 +39,21 @@ SYSTEMS = [
         "US customary. `ksi` is the natural pressure unit. Mass has no named "
         "consistent unit (it is `kip*s^2/in`).",
     ),
+    (
+        "mks",
+        "N-m-kg-s (MKS)",
+        "Built via the L-M-T path (`make_system(length=\"m\", mass=\"kg\", time=\"s\")`). "
+        "Numerically identical to `N_m` — the same system, expressed in the "
+        "physics/SI mental model where mass is a primitive and force is derived.",
+    ),
+    (
+        "cgs",
+        "dyne-cm-gram-s (CGS)",
+        "Centimetre-gram-second. Force base is the dyne. Common in physics and "
+        "chemistry; the natural pressure (barye), energy (erg), and power "
+        "(erg/s) units are not currently in the factor table, so `Pa = 10` "
+        "and `MPa = 1e7` here.",
+    ),
 ]
 
 DIMENSIONS = [
