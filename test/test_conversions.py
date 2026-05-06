@@ -1,48 +1,41 @@
-import pytest
+"""Spot-check conversion ratios across systems."""
+
 import math
-from baseUnits import (
-    m, mm, ft, inches,
-    kg, tonne, lb, gr,
-    s, h,
-    N, kgf, lbf,
-    MPa, ksi, Pa,
-    J, cal, mJ,
-    W, HP,
-    radian, degree,
-    minutes
-)
 
-def test_length_conversions():
-    assert (1 * m).to(mm).value == 1000.0
-    assert (1 * ft).to(mm).value == pytest.approx(304.8)
-    assert (1 * inches).to(mm).value == pytest.approx(25.4)
+import pytest
 
-def test_mass_conversions():
-    assert (1 * kg).to(tonne).value == 0.001
-    assert (1 * lb).to(gr).value == pytest.approx(453600000.0 * 1e-6) # 453.6 gr
-    assert (1000 * kg).to(tonne).value == 1.0
 
-def test_force_conversions():
-    assert (1 * kgf).to(N).value == pytest.approx(9.807)
-    assert (1 * lbf).to(N).value == pytest.approx(4.448)
+def test_kn_to_lbf_default():
+    from baseUnits import kN, lbf
 
-def test_pressure_conversions():
-    assert (1 * MPa).to(Pa).value == 1_000_000.0
-    assert (1 * ksi).to(MPa).value == pytest.approx(6.895)
-    assert (1 * (N/m**2)).to(Pa).value == pytest.approx(1.0)
-    assert (1 * (N/mm**2)).to(MPa).value == pytest.approx(1.0)
+    assert (100 * kN) / lbf == pytest.approx(22480.89, rel=1e-5)
 
-def test_energy_conversions():
-    assert (1 * J).to(mJ).value == 1000.0
-    assert (1 * cal).to(J).value == pytest.approx(4.184)
 
-def test_power_conversions():
-    assert (1 * W).to(mJ/s).value == 1000.0
-    assert (1 * HP).to(W).value == pytest.approx(745.7)
+def test_ft_to_mm_default():
+    from baseUnits import ft, mm
 
-def test_time_conversions():
-    assert (1 * h).to(s).value == 3600.0
-    assert (1 * h).to(minutes).value == 60.0
+    assert (1 * ft) / mm == pytest.approx(304.8)
 
-def test_angle_conversions():
-    assert (180 * degree).to(radian).value == pytest.approx(math.pi)
+
+def test_mpa_to_ksi_default():
+    from baseUnits import MPa, ksi
+
+    assert (1 * MPa) / ksi == pytest.approx(0.14504, rel=1e-4)
+
+
+def test_degree_to_radian():
+    from baseUnits import degree
+
+    assert (180 * degree) == pytest.approx(math.pi)
+
+
+def test_kip_in_pressure_self_consistent():
+    from baseUnits.systems.kip_in import MPa, ksi
+
+    assert (1 * ksi) / MPa == pytest.approx(6.894757, rel=1e-5)
+
+
+def test_n_m_pressure_natural():
+    from baseUnits.systems.N_m import Pa
+
+    assert Pa == pytest.approx(1.0)

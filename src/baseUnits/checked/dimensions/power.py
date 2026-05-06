@@ -3,10 +3,11 @@ Defines all Power units.
 Dimension: Mass * Length^2 / Time^3
 Base Unit: mJ/s (which is N*mm/s)
 """
+
 # Import the base Unit class
-from ..units import Unit, register_base_unit
 # Import the Dimension helper class
 from ..dimension import Dimension
+from ..units import Unit, register_base_unit
 
 # 1. Define the compound dimension for Power
 #    Power = Energy / Time = (Mass * Length^2 / Time^2) / Time

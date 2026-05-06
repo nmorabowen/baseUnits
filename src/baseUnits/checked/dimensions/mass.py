@@ -9,9 +9,7 @@ factors are relative to 'tonne'.
 from ..units import Unit, register_base_unit
 
 # 1. Define the base unit for this dimension
-tonne = register_base_unit(
-    Unit(name="tonne", symbol="tonne", dimension="Mass", factor=1.0)
-)
+tonne = register_base_unit(Unit(name="tonne", symbol="tonne", dimension="Mass", factor=1.0))
 
 # 2. Define other Mass units relative to the base (tonne)
 kg = Unit(name="kilogram", symbol="kg", dimension="Mass", factor=1e-3)

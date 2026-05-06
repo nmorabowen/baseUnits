@@ -1,15 +1,16 @@
 from __future__ import annotations
+
 from collections import defaultdict
-import math
+
 
 class Dimension:
     """
     Represents the physical dimension of a unit (e.g., Length, Time, Mass^1*Length^-2).
-    
+
     This class stores dimensions as a dictionary of base dimension names
     and their exponents.
     """
-    
+
     def __init__(self, base_dims: dict[str, float | int] | str):
         """
         Initializes a Dimension.
@@ -49,12 +50,13 @@ class Dimension:
         """
         Makes the Dimension object hashable so it can be used as a
         dictionary key.
-        
+
         We do this by creating an immutable, sorted tuple of its
         internal items and hashing that.
         """
         sorted_items = tuple(sorted(self._dims.items()))
         return hash(sorted_items)
+
     # --- END NEW ---
 
     def __mul__(self, other: Dimension) -> Dimension:

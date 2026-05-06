@@ -1,53 +1,27 @@
+"""baseUnits — float-based unit conversion factors for consistent unit systems.
+
+The top-level package re-exports the default ``N-mm-tonne-s`` system as named
+float constants. Multiply scalar values by a unit (``5 * m``) to convert them
+into the active system's base units, and divide by a unit to convert back out.
+
+Other pre-built systems live under ``baseUnits.systems`` (``N_m``, ``kN_m``,
+``kip_in``); for runtime dimensional safety, use the opt-in
+``baseUnits.checked`` layer instead.
+
+Attributes:
+    BASE: Human-readable label of the active system (e.g. ``"N-mm-tonne-s"``).
+    g: Standard gravitational acceleration in the active system.
+
+Example:
+    >>> import baseUnits as u
+    >>> u.BASE
+    'N-mm-tonne-s'
+    >>> 5 * u.m            # 5 metres expressed in mm
+    5000.0
+    >>> (10 * u.MPa) / u.MPa
+    1.0
 """
-baseUnits: A Python package for unit-aware physical calculations.
-"""
 
-# 1. Expose the core classes and helpers
-from .dimension import Dimension
-from .units import Unit, register_base_unit, get_base_unit
-from .quantity import Quantity
-
-# 2. Expose all unit instances from the dimensions sub-package
-from .dimensions.length import *
-from .dimensions.mass import *
-from .dimensions.force import *
-from .dimensions.time import *
-from .dimensions.angle import *
-from .dimensions.temperature import *
-# --- Derived Units ---
-from .dimensions.pressure import *
-from .dimensions.energy import *
-from .dimensions.power import *
-from .dimensions.density import * # <-- NEW
-from .dimensions.unit_weight import * # <-- NEW
-
-# 3. Define '__all__' for a clean 'from baseUnits import *'
-__all__ = [
-    # Core Classes
-    'Unit', 'Quantity', 'Dimension',
-
-    # Length
-    'mm', 'cm', 'm', 'km', 'inches', 'ft', 'yard', 'mile',
-    # Force
-    'N', 'kN', 'MN', 'dyne', 'kgf', 'tf', 'lbf', 'kip',
-    # Mass
-    'tonne', 'kg', 'gr', 'gram', 'mg', 'lb', 'oz', 
-    # Pressure
-    'MPa', 'kPa', 'GPa', 'kgf_cm2', 'Pa', 'ksi',
-    # Energy
-    'J', 'kJ', 'mJ', 'cal', 'kcal', 'eV', 'Wh', 'kWh',
-    # Power
-    'W', 'kW', 'MW', 'HP', 'mJ_s',
-    # Time
-    's', 'minutes', 'h', 'day', 'week', 'month', 'year',
-    # Angle
-    'radian', 'degree',
-    # Temperature
-    'K', 'C', 'F',
-
-    # Density (NEW)
-    'tonne_per_mm3', 'kg_per_m3', 'gr_per_cm3', 'tonne_per_m3',
-
-    # Unit Weight (NEW)
-    'N_per_mm3', 'N_per_m3', 'kN_per_m3', 'kgf_per_m3',
-]
+from . import checked, systems
+from .systems.N_mm import *
+from .systems.N_mm import BASE, g

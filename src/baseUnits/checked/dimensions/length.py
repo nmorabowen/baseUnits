@@ -9,9 +9,7 @@ factors are relative to 'mm'.
 from ..units import Unit, register_base_unit
 
 # 1. Define and register the base unit
-mm = register_base_unit(
-    Unit(name="millimeter", symbol="mm", dimension="Length", factor=1.0)
-)
+mm = register_base_unit(Unit(name="millimeter", symbol="mm", dimension="Length", factor=1.0))
 
 # 2. Define other Length units relative to the base (mm)
 cm = Unit(name="centimeter", symbol="cm", dimension="Length", factor=10.0)

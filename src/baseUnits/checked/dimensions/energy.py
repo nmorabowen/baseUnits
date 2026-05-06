@@ -3,10 +3,11 @@ Defines all Energy units.
 Dimension: Mass * Length^2 / Time^2
 Base Unit: mJ (which is N*mm)
 """
+
 # Import the base Unit class
-from ..units import Unit, register_base_unit
 # Import the Dimension helper class
 from ..dimension import Dimension
+from ..units import Unit, register_base_unit
 
 # 1. Define the compound dimension for Energy
 #    Energy = Force * Length = (Mass * Length / Time^2) * Length
