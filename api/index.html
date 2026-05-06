@@ -732,6 +732,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="make_system">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baseUnits._make_system.make_system--three-arg-form-derive-mass-from-force" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-arg form — derive mass from force.
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baseUnits._make_system.make_system--four-arg-form-fully-explicit-factory-verifies-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Four-arg form — fully explicit, factory verifies consistency.
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1223,6 +1251,34 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="make_system">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baseUnits._make_system.make_system--three-arg-form-derive-mass-from-force" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-arg form — derive mass from force.
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baseUnits._make_system.make_system--four-arg-form-fully-explicit-factory-verifies-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Four-arg form — fully explicit, factory verifies consistency.
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1750,13 +1806,20 @@ u.BASE
 
     <div class="doc doc-contents first">
 
-        <p>Build a consistent unit system from L-T plus exactly one of force or mass.</p>
-<p>Pick three primitives — length, time, and <em>either</em> force or mass — and the
-fourth is derived so that Newton's second law holds without spurious
-factors (<code>F = M * L / T**2</code>). Pressure, energy, power, density, and
-unit-weight bases follow the same construction.</p>
-<p>Each named unit in :mod:<code>baseUnits._factors</code> is then divided by its
-dimension's base SI value to produce a float you multiply scalars by.</p>
+        <p>Build a consistent unit system from L, T, and force and/or mass.</p>
+<p>Always pass <code>length</code> and <code>time</code>. You may additionally pass <code>force</code>,
+<code>mass</code>, or both:</p>
+<ul>
+<li><strong>One of force/mass</strong> — the other is derived so <code>F = M * L / T**2</code>.</li>
+<li><strong>Both</strong> — the factory verifies they are mutually consistent and
+  raises <code>ValueError</code> if not. Use this form to make every system
+  module fully self-documenting at the call site.</li>
+<li><strong>Neither</strong> — raises <code>ValueError</code>.</li>
+</ul>
+<p>Pressure, energy, power, density, and unit-weight bases are then
+constructed from the four primitives. Each named unit in
+:mod:<code>baseUnits._factors</code> is divided by its dimension's base SI value
+to produce a float you multiply scalars by.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1811,8 +1874,7 @@ dimension's base SI value to produce a float you multiply scalars by.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Key in <code>_factors.FORCE</code> (e.g. <code>"N"</code>, <code>"kN"</code>, <code>"kip"</code>).
-Provide this for the F-L-T mental model. Mutually exclusive with <code>mass</code>.</p>
+                <p>Optional key in <code>_factors.FORCE</code>.</p>
               </div>
             </td>
             <td>
@@ -1828,9 +1890,7 @@ Provide this for the F-L-T mental model. Mutually exclusive with <code>mass</cod
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Key in <code>_factors.MASS</code> (e.g. <code>"kg"</code>, <code>"gram"</code>, <code>"tonne"</code>).
-Provide this for the L-M-T (physics/SI) mental model. Mutually
-exclusive with <code>force</code>.</p>
+                <p>Optional key in <code>_factors.MASS</code>.</p>
               </div>
             </td>
             <td>
@@ -1899,7 +1959,8 @@ exclusive with <code>force</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If neither or both of <code>force</code> and <code>mass</code> are given.</p>
+                <p>If neither force nor mass is given, or if both are given
+and their combination violates <code>F = M * L / T**2</code>.</p>
               </div>
             </td>
           </tr>
@@ -1922,14 +1983,14 @@ exclusive with <code>force</code>.</p>
   <blockquote>
 <blockquote>
 <blockquote>
+<h3 id="baseUnits._make_system.make_system--three-arg-form-derive-mass-from-force">Three-arg form — derive mass from force.</h3>
 <p>sys = make_system(length="mm", force="N", time="s")
 sys.MPa
 1.0
 sys.BASE
 'N-mm-tonne-s'</p>
-<p>mks = make_system(length="m", mass="kg", time="s")
-mks.N
-1.0
+<h3 id="baseUnits._make_system.make_system--four-arg-form-fully-explicit-factory-verifies-consistency">Four-arg form — fully explicit, factory verifies consistency.</h3>
+<p>mks = make_system(length="m", force="N", mass="kg", time="s")
 mks.BASE
 'N-m-kg-s'</p>
 </blockquote>
@@ -2035,31 +2096,48 @@ mks.BASE
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
-<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_system</span><span class="p">(</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_system</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">length</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">force</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">mass</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a consistent unit system from L-T plus exactly one of force or mass.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a consistent unit system from L, T, and force and/or mass.</span>
 
-<span class="sd">    Pick three primitives — length, time, and *either* force or mass — and the</span>
-<span class="sd">    fourth is derived so that Newton&#39;s second law holds without spurious</span>
-<span class="sd">    factors (``F = M * L / T**2``). Pressure, energy, power, density, and</span>
-<span class="sd">    unit-weight bases follow the same construction.</span>
+<span class="sd">    Always pass ``length`` and ``time``. You may additionally pass ``force``,</span>
+<span class="sd">    ``mass``, or both:</span>
 
-<span class="sd">    Each named unit in :mod:`baseUnits._factors` is then divided by its</span>
-<span class="sd">    dimension&#39;s base SI value to produce a float you multiply scalars by.</span>
+<span class="sd">    - **One of force/mass** — the other is derived so ``F = M * L / T**2``.</span>
+<span class="sd">    - **Both** — the factory verifies they are mutually consistent and</span>
+<span class="sd">      raises ``ValueError`` if not. Use this form to make every system</span>
+<span class="sd">      module fully self-documenting at the call site.</span>
+<span class="sd">    - **Neither** — raises ``ValueError``.</span>
+
+<span class="sd">    Pressure, energy, power, density, and unit-weight bases are then</span>
+<span class="sd">    constructed from the four primitives. Each named unit in</span>
+<span class="sd">    :mod:`baseUnits._factors` is divided by its dimension&#39;s base SI value</span>
+<span class="sd">    to produce a float you multiply scalars by.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        length: Key in ``_factors.LENGTH`` (e.g. ``&quot;mm&quot;``, ``&quot;m&quot;``, ``&quot;inches&quot;``).</span>
 <span class="sd">        time: Key in ``_factors.TIME`` (typically ``&quot;s&quot;``).</span>
-<span class="sd">        force: Key in ``_factors.FORCE`` (e.g. ``&quot;N&quot;``, ``&quot;kN&quot;``, ``&quot;kip&quot;``).</span>
-<span class="sd">            Provide this for the F-L-T mental model. Mutually exclusive with ``mass``.</span>
-<span class="sd">        mass: Key in ``_factors.MASS`` (e.g. ``&quot;kg&quot;``, ``&quot;gram&quot;``, ``&quot;tonne&quot;``).</span>
-<span class="sd">            Provide this for the L-M-T (physics/SI) mental model. Mutually</span>
-<span class="sd">            exclusive with ``force``.</span>
+<span class="sd">        force: Optional key in ``_factors.FORCE``.</span>
+<span class="sd">        mass: Optional key in ``_factors.MASS``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A :class:`types.SimpleNamespace` with one float attribute per named</span>
@@ -2067,28 +2145,39 @@ mks.BASE
 <span class="sd">        label of the system).</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If neither or both of ``force`` and ``mass`` are given.</span>
+<span class="sd">        ValueError: If neither force nor mass is given, or if both are given</span>
+<span class="sd">            and their combination violates ``F = M * L / T**2``.</span>
 <span class="sd">        KeyError: If any name is not a known unit in ``_factors``.</span>
 
 <span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; # Three-arg form — derive mass from force.</span>
 <span class="sd">        &gt;&gt;&gt; sys = make_system(length=&quot;mm&quot;, force=&quot;N&quot;, time=&quot;s&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; sys.MPa</span>
 <span class="sd">        1.0</span>
 <span class="sd">        &gt;&gt;&gt; sys.BASE</span>
 <span class="sd">        &#39;N-mm-tonne-s&#39;</span>
 
-<span class="sd">        &gt;&gt;&gt; mks = make_system(length=&quot;m&quot;, mass=&quot;kg&quot;, time=&quot;s&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; mks.N</span>
-<span class="sd">        1.0</span>
+<span class="sd">        &gt;&gt;&gt; # Four-arg form — fully explicit, factory verifies consistency.</span>
+<span class="sd">        &gt;&gt;&gt; mks = make_system(length=&quot;m&quot;, force=&quot;N&quot;, mass=&quot;kg&quot;, time=&quot;s&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; mks.BASE</span>
 <span class="sd">        &#39;N-m-kg-s&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">force</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">mass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pass exactly one of `force` or `mass`.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">force</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pass at least one of `force` or `mass`.&quot;</span><span class="p">)</span>
 
     <span class="n">L</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">LENGTH</span><span class="p">[</span><span class="n">length</span><span class="p">]</span>
     <span class="n">T</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">TIME</span><span class="p">[</span><span class="n">time</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">FORCE</span><span class="p">[</span><span class="n">force</span><span class="p">]</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">MASS</span><span class="p">[</span><span class="n">mass</span><span class="p">]</span>
+        <span class="n">derived_M</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="n">T</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">L</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">derived_M</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Inconsistent system: force=&#39;</span><span class="si">{</span><span class="n">force</span><span class="si">}</span><span class="s2">&#39; with length=&#39;</span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;and time=&#39;</span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&#39; implies mass=</span><span class="si">{</span><span class="n">derived_M</span><span class="si">}</span><span class="s2"> kg, but &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;mass=&#39;</span><span class="si">{</span><span class="n">mass</span><span class="si">}</span><span class="s2">&#39; is </span><span class="si">{</span><span class="n">M</span><span class="si">}</span><span class="s2"> kg.&quot;</span>
+            <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">force</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">F</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">FORCE</span><span class="p">[</span><span class="n">force</span><span class="p">]</span>
         <span class="n">M</span> <span class="o">=</span> <span class="n">F</span> <span class="o">*</span> <span class="n">T</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">L</span>
     <span class="k">else</span><span class="p">:</span>
