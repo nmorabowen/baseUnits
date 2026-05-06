@@ -56,6 +56,12 @@ SYSTEMS = [
         "under standard gravity.",
     ),
     (
+        "kg_cm_s",
+        "cm-kg-s (L-M-T, no named force)",
+        "Length=cm, mass=kg, time=s. Derived force unit is `1 kg*cm/s^2 = 0.01 N` "
+        "(no popular short name). `Pa = 0.01`, `MPa = 1e4`, `g = 980.665 cm/s^2`.",
+    ),
+    (
         "cgs",
         "dyne-cm-gram-s (CGS)",
         "Centimetre-gram-second. Force base is the dyne. Common in physics and "
