@@ -4,3 +4,31 @@ __pycache__/
 
 # Ignore Python packaging files
 *.egg-info/
+
+# pytest / mypy / ruff caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# benchmarks
+.benchmarks/
+
+# build artifacts
+dist/
+build/
+
+# mkdocs site
+site/
+
+# venv
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
