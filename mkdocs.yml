@@ -1,0 +1,73 @@
+site_name: baseUnits
+site_description: Float-based unit conversion factors for consistent unit systems.
+repo_url: https://github.com/nmorabowen/baseUnits
+repo_name: nmorabowen/baseUnits
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - content.code.copy
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/scripts/gen_unit_tables.py
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
+            force_inspection: true
+
+markdown_extensions:
+  - admonition
+  - tables
+  - attr_list
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path:
+        - docs
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - The One Rule: the-one-rule.md
+  - Quickstart: quickstart.md
+  - Systems: systems.md
+  - Switching Systems: switching-systems.md
+  - Checked Layer: checked.md
+  - API Reference: api.md
+  - Contributing: contributing.md
