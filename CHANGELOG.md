@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   per dimension.
 - `make_system` helper for assembling systems from any combination of base
   units.
-- Pre-built systems under `baseUnits.systems`: `N_mm`, `N_m`, `kN_m`, `kip_in`.
+- Pre-built systems under `baseUnits.systems`: `N_mm_s`, `N_m_s`, `kN_m_s`, `kip_in_s`.
 - Missing temperature unit `K` now exported alongside the other base units.
 
 ### Changed

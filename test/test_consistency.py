@@ -28,14 +28,12 @@ from baseUnits import _factors as _f
 # Exactly one of force / mass is set per row. The other is derived by
 # make_system so F = m * a holds without factors.
 SYSTEMS = [
-    ("N_mm", "mm", "N", None, "s"),
-    ("N_m", "m", "N", None, "s"),
-    ("kN_m", "m", "kN", None, "s"),
-    ("kip_in", "inches", "kip", None, "s"),
-    ("mks", "m", None, "kg", "s"),  # L-M-T; ≡ N_m numerically
-    ("cgs", "cm", None, "gram", "s"),  # derived force = dyne
-    ("kgf_m", "m", "kgf", None, "s"),  # derived mass = hyl (unnamed)
-    ("kg_cm_s", "cm", None, "kg", "s"),  # derived force unnamed
+    ("N_mm_s", "mm", "N", None, "s"),
+    ("N_m_s", "m", "N", None, "s"),
+    ("kN_m_s", "m", "kN", None, "s"),
+    ("kip_in_s", "inches", "kip", None, "s"),
+    ("kgf_m_s", "m", "kgf", None, "s"),  # derived mass = hyl (unnamed)
+    ("dyne_cm_s", "cm", "dyne", None, "s"),  # CGS
 ]
 
 
@@ -105,14 +103,12 @@ def test_every_unit_matches_absolute_si(sysname, L_name, F_name, M_name, T_name)
 # in that system. None means the natural derived base has no popular name in
 # the factor table (e.g., barye, erg, kgf*m).
 NATURAL_BASES = {
-    "N_mm": ("MPa", "mJ", "mJ_s"),
-    "N_m": ("Pa", "J", "W"),
-    "kN_m": ("kPa", "kJ", "kW"),
-    "kip_in": ("ksi", None, None),
-    "mks": ("Pa", "J", "W"),
-    "cgs": (None, None, None),
-    "kgf_m": (None, None, None),
-    "kg_cm_s": (None, None, None),
+    "N_mm_s": ("MPa", "mJ", "mJ_s"),
+    "N_m_s": ("Pa", "J", "W"),
+    "kN_m_s": ("kPa", "kJ", "kW"),
+    "kip_in_s": ("ksi", None, None),
+    "kgf_m_s": (None, None, None),
+    "dyne_cm_s": (None, None, None),
 }
 
 

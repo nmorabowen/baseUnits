@@ -79,4 +79,4 @@ assert u.BASE == "N-mm-tonne-s", f"unexpected base: {u.BASE}"
 ```
 
 That single assert catches accidental system swaps (someone pasting
-`from baseUnits.systems.kip_in import *` two scopes up).
+`from baseUnits.systems.kip_in_s import *` two scopes up).

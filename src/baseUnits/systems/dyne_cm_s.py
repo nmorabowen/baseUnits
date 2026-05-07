@@ -1,4 +1,4 @@
-"""CGS (length-mass-time) consistent unit system: cm-gram-s.
+"""dyne-cm-gram-s consistent unit system (also known as CGS).
 
 Force base is the dyne (``1 dyne = 1 g*cm/s^2``). Common in physics and
 chemistry; rarely used in engineering. Pressure base is the barye

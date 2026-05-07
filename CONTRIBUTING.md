@@ -25,7 +25,7 @@ pytest
 ## Adding a new system
 
 1. Create `src/baseUnits/systems/<name>.py` following the pattern of
-   `src/baseUnits/systems/N_mm.py`. The file should make a single call to
+   `src/baseUnits/systems/N_mm_s.py`. The file should make a single call to
    `make_system` with the desired base units.
 2. Add the new system to the parametrized `SYSTEMS` list in
    `test/test_consistency.py` so it is exercised by the cross-system invariants.

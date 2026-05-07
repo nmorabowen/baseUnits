@@ -29,13 +29,13 @@ def test_degree_to_radian():
     assert (180 * degree) == pytest.approx(math.pi)
 
 
-def test_kip_in_pressure_self_consistent():
-    from baseUnits.systems.kip_in import MPa, ksi
+def test_kip_in_s_pressure_self_consistent():
+    from baseUnits.systems.kip_in_s import MPa, ksi
 
     assert (1 * ksi) / MPa == pytest.approx(6.894757, rel=1e-5)
 
 
-def test_n_m_pressure_natural():
-    from baseUnits.systems.N_m import Pa
+def test_N_m_s_pressure_natural():
+    from baseUnits.systems.N_m_s import Pa
 
     assert Pa == pytest.approx(1.0)

@@ -6,7 +6,7 @@ in a different system.
 ## 1. Whole-script switch
 
 ```python
-from baseUnits.systems.kip_in import *
+from baseUnits.systems.kip_in_s import *
 
 assert BASE == "kip-inches-s"
 F = 50 * kip
@@ -22,7 +22,7 @@ system is unambiguous.
 ## 2. Aliased import
 
 ```python
-import baseUnits.systems.kN_m as u
+import baseUnits.systems.kN_m_s as u
 
 assert u.BASE == "kN-m-tonne-s"
 F = 100 * u.kN
@@ -41,7 +41,7 @@ everywhere:
 
 ```python
 # myproject/units.py
-from baseUnits.systems.kN_m import *  # noqa: F401, F403
+from baseUnits.systems.kN_m_s import *  # noqa: F401, F403
 ```
 
 ```python
@@ -65,7 +65,7 @@ assert baseUnits.BASE == "N-mm-tonne-s"
 or with an aliased system:
 
 ```python
-import baseUnits.systems.kip_in as u
+import baseUnits.systems.kip_in_s as u
 assert u.BASE == "kip-inches-s"
 ```
 

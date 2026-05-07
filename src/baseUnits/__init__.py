@@ -4,9 +4,10 @@ The top-level package re-exports the default ``N-mm-tonne-s`` system as named
 float constants. Multiply scalar values by a unit (``5 * m``) to convert them
 into the active system's base units, and divide by a unit to convert back out.
 
-Other pre-built systems live under ``baseUnits.systems`` (``N_m``, ``kN_m``,
-``kip_in``); for runtime dimensional safety, use the opt-in
-``baseUnits.checked`` layer instead.
+Other pre-built systems live under ``baseUnits.systems`` and follow the
+``<force>_<length>_<time>`` naming pattern: ``N_mm_s`` (default), ``N_m_s``,
+``kN_m_s``, ``kip_in_s``, ``kgf_m_s``, ``dyne_cm_s``. For runtime dimensional
+safety, use the opt-in ``baseUnits.checked`` layer instead.
 
 Attributes:
     BASE: Human-readable label of the active system (e.g. ``"N-mm-tonne-s"``).
@@ -23,5 +24,5 @@ Example:
 """
 
 from . import checked, systems
-from .systems.N_mm import *
-from .systems.N_mm import BASE, g
+from .systems.N_mm_s import *
+from .systems.N_mm_s import BASE, g

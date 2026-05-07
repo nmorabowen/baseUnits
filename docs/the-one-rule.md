@@ -26,10 +26,10 @@ The test suite checks four things per system:
 ## The same calculation in every system
 
 ```python
-import baseUnits.systems.N_mm   as nmm
-import baseUnits.systems.N_m    as nm
-import baseUnits.systems.kN_m   as knm
-import baseUnits.systems.kip_in as kin
+import baseUnits.systems.N_mm_s   as nmm
+import baseUnits.systems.N_m_s    as nm
+import baseUnits.systems.kN_m_s   as knm
+import baseUnits.systems.kip_in_s as kin
 
 def weight(sys):
     return 100 * sys.kg * 9.81 * sys.m / sys.s**2

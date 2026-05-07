@@ -56,8 +56,8 @@ def make_system(
         'N-mm-tonne-s'
 
         >>> # Four-arg form — fully explicit, factory verifies consistency.
-        >>> mks = make_system(length="m", force="N", mass="kg", time="s")
-        >>> mks.BASE
+        >>> sys = make_system(length="m", force="N", mass="kg", time="s")
+        >>> sys.BASE
         'N-m-kg-s'
     """
     if force is None and mass is None:

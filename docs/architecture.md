@@ -5,8 +5,8 @@ The package has four layers, each doing one job.
 ```mermaid
 flowchart LR
     A[_factors.py<br/>absolute SI dicts] --> B[make_system<br/>L, F, T -> namespace]
-    B --> C[systems/N_mm.py<br/>systems/N_m.py<br/>systems/kN_m.py<br/>systems/kip_in.py]
-    C --> D[baseUnits/__init__.py<br/>default = N_mm]
+    B --> C[systems/N_mm_s.py<br/>systems/N_m_s.py<br/>systems/kN_m_s.py<br/>systems/kip_in_s.py]
+    C --> D[baseUnits/__init__.py<br/>default = N_mm_s]
 ```
 
 ## `_factors.py` — single source of truth
@@ -40,14 +40,14 @@ The result is a `types.SimpleNamespace` of float attributes plus
 ## `systems/<name>.py` — pre-built systems
 
 Each module calls `make_system` once and re-exports the namespace at module
-scope via `globals().update(_ns.__dict__)`, so `from baseUnits.systems.kip_in
+scope via `globals().update(_ns.__dict__)`, so `from baseUnits.systems.kip_in_s
 import *` puts every named float in the caller's scope.
 
-Available out of the box: `N_mm`, `N_m`, `kN_m`, `kip_in`.
+Available out of the box: `N_mm_s`, `N_m_s`, `kN_m_s`, `kip_in_s`.
 
 ## Top-level package
 
-`baseUnits/__init__.py` re-exports the default system (`N_mm`) at the top
+`baseUnits/__init__.py` re-exports the default system (`N_mm_s`) at the top
 level, alongside the `systems` and `checked` submodules. `import baseUnits as
 u` is the canonical entry point.
 

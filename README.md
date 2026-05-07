@@ -19,10 +19,14 @@ Every unit is a plain `float` equal to its conversion factor into a chosen consi
 
 ## Available systems
 
-- `baseUnits.systems.N_mm` — N-mm-tonne-s (default)
-- `baseUnits.systems.N_m` — N-m-kg-s
-- `baseUnits.systems.kN_m` — kN-m-tonne-s
-- `baseUnits.systems.kip_in` — kip-inches-s
+All modules follow the `<force>_<length>_<time>` naming pattern.
+
+- `baseUnits.systems.N_mm_s` — N-mm-tonne-s (default)
+- `baseUnits.systems.N_m_s` — N-m-kg-s
+- `baseUnits.systems.kN_m_s` — kN-m-tonne-s
+- `baseUnits.systems.kip_in_s` — kip-inches-s
+- `baseUnits.systems.kgf_m_s` — gravitational metric (mass derived = hyl)
+- `baseUnits.systems.dyne_cm_s` — CGS
 
 ## Quickstart
 
@@ -38,7 +42,7 @@ weight = 80 * g         # 80 * 9806.65 (mm/s^2 acceleration scale)
 ## Switching systems
 
 ```python
-from baseUnits.systems.kip_in import m, kN, ksi, BASE
+from baseUnits.systems.kip_in_s import m, kN, ksi, BASE
 
 print(BASE)             # "kip-inches-s"
 print(5 * m)            # 196.85 (inches)
