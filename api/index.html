@@ -1709,9 +1709,10 @@
 <p>The top-level package re-exports the default <code>N-mm-tonne-s</code> system as named
 float constants. Multiply scalar values by a unit (<code>5 * m</code>) to convert them
 into the active system's base units, and divide by a unit to convert back out.</p>
-<p>Other pre-built systems live under <code>baseUnits.systems</code> (<code>N_m</code>, <code>kN_m</code>,
-<code>kip_in</code>); for runtime dimensional safety, use the opt-in
-<code>baseUnits.checked</code> layer instead.</p>
+<p>Other pre-built systems live under <code>baseUnits.systems</code> and follow the
+<code>&lt;force&gt;_&lt;length&gt;_&lt;time&gt;</code> naming pattern: <code>N_mm_s</code> (default), <code>N_m_s</code>,
+<code>kN_m_s</code>, <code>kip_in_s</code>, <code>kgf_m_s</code>, <code>dyne_cm_s</code>. For runtime dimensional
+safety, use the opt-in <code>baseUnits.checked</code> layer instead.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -1990,8 +1991,8 @@ sys.MPa
 sys.BASE
 'N-mm-tonne-s'</p>
 <h3 id="baseUnits._make_system.make_system--four-arg-form-fully-explicit-factory-verifies-consistency">Four-arg form — fully explicit, factory verifies consistency.</h3>
-<p>mks = make_system(length="m", force="N", mass="kg", time="s")
-mks.BASE
+<p>sys = make_system(length="m", force="N", mass="kg", time="s")
+sys.BASE
 'N-m-kg-s'</p>
 </blockquote>
 </blockquote>
@@ -2158,8 +2159,8 @@ mks.BASE
 <span class="sd">        &#39;N-mm-tonne-s&#39;</span>
 
 <span class="sd">        &gt;&gt;&gt; # Four-arg form — fully explicit, factory verifies consistency.</span>
-<span class="sd">        &gt;&gt;&gt; mks = make_system(length=&quot;m&quot;, force=&quot;N&quot;, mass=&quot;kg&quot;, time=&quot;s&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; mks.BASE</span>
+<span class="sd">        &gt;&gt;&gt; sys = make_system(length=&quot;m&quot;, force=&quot;N&quot;, mass=&quot;kg&quot;, time=&quot;s&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; sys.BASE</span>
 <span class="sd">        &#39;N-m-kg-s&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">force</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

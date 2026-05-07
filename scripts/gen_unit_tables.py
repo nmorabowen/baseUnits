@@ -15,40 +15,33 @@ from baseUnits import _factors as _f
 
 SYSTEMS = [
     (
-        "N_mm",
+        "N_mm_s",
         "N-mm-tonne-s",
         "Default system. Used for FEM models in millimetres with newton "
         "forces and tonne masses. `MPa` is the natural pressure unit and "
         "equals `1.0`.",
     ),
     (
-        "N_m",
+        "N_m_s",
         "N-m-kg-s",
         "Strict SI. Length in metres, force in newtons, mass in kilograms. "
         "`Pa` is the natural pressure unit.",
     ),
     (
-        "kN_m",
+        "kN_m_s",
         "kN-m-tonne-s",
         "Common in geotechnical and large-scale civil engineering. `kPa` is "
         "the natural pressure unit.",
     ),
     (
-        "kip_in",
+        "kip_in_s",
         "kip-inches-s",
         "US customary. `ksi` is the natural pressure unit. Mass has no named "
         "consistent unit (it is `kip*s^2/in`).",
     ),
     (
-        "mks",
-        "N-m-kg-s (MKS)",
-        "Built via the L-M-T path (`make_system(length=\"m\", mass=\"kg\", time=\"s\")`). "
-        "Numerically identical to `N_m` — the same system, expressed in the "
-        "physics/SI mental model where mass is a primitive and force is derived.",
-    ),
-    (
-        "kgf_m",
-        "kgf-m-s (gravitational MKS)",
+        "kgf_m_s",
+        "kgf-m-s (gravitational metric)",
         "Engineering metric system with kgf as the force base. Mass is derived "
         "and equals the **hyl** (technical mass unit, ~9.80665 kg). "
         "Practical consequence: ``100 * kg * g`` equals exactly ``100`` (100 kgf), "
@@ -56,13 +49,7 @@ SYSTEMS = [
         "under standard gravity.",
     ),
     (
-        "kg_cm_s",
-        "cm-kg-s (L-M-T, no named force)",
-        "Length=cm, mass=kg, time=s. Derived force unit is `1 kg*cm/s^2 = 0.01 N` "
-        "(no popular short name). `Pa = 0.01`, `MPa = 1e4`, `g = 980.665 cm/s^2`.",
-    ),
-    (
-        "cgs",
+        "dyne_cm_s",
         "dyne-cm-gram-s (CGS)",
         "Centimetre-gram-second. Force base is the dyne. Common in physics and "
         "chemistry; the natural pressure (barye), energy (erg), and power "
