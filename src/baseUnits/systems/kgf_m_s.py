@@ -22,5 +22,5 @@ from .._make_system import make_system as _make
 # factor table, so we cannot pass mass="...".
 _ns = _make(length="m", force="kgf", time="s")
 globals().update(_ns.__dict__)
-__all__ = [k for k in _ns.__dict__]
+__all__ = list(_ns.__dict__)  # pyright: ignore[reportUnsupportedDunderAll]
 del _make, _ns

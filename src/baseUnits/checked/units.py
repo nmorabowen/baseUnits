@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 # Import the Dimension class
 from .dimension import Dimension
@@ -93,6 +93,12 @@ class Unit:
         if isinstance(value, (int, float)):
             return Quantity(value, self)
         return NotImplemented
+
+    @overload
+    def __mul__(self, other: float | int) -> Quantity: ...
+
+    @overload
+    def __mul__(self, other: Unit) -> Unit: ...
 
     def __mul__(self, other: float | int | Unit) -> Quantity | Unit:
         if isinstance(other, (int, float)):

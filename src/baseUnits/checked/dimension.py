@@ -15,6 +15,7 @@ class Dimension:
         """
         Initializes a Dimension.
         """
+        self._dims: dict[str, float | int]
         if isinstance(base_dims, str):
             # Simple dimension like "Length"
             self._dims = {base_dims: 1}
