@@ -79,6 +79,7 @@ def make_system(
         F = _f.FORCE[force]
         M = F * T**2 / L
     else:
+        assert mass is not None
         M = _f.MASS[mass]
         F = M * L / T**2
 

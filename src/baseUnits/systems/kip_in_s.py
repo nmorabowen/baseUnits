@@ -6,5 +6,5 @@ from .._make_system import make_system as _make
 # popular short name, so we cannot pass mass="...".
 _ns = _make(length="inches", force="kip", time="s")
 globals().update(_ns.__dict__)
-__all__ = [k for k in _ns.__dict__]
+__all__ = list(_ns.__dict__)  # pyright: ignore[reportUnsupportedDunderAll]
 del _make, _ns

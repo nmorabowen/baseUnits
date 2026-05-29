@@ -25,4 +25,4 @@ Example:
 
 from . import checked, systems
 from .systems.N_mm_s import *
-from .systems.N_mm_s import BASE, g
+from .systems.N_mm_s import BASE, g  # type: ignore[attr-defined]  # populated dynamically
