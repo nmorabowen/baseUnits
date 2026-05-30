@@ -20,6 +20,8 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 "src/baseUnits/checked/dimensions/*.py" = ["F401"]
 # Tests intentionally import names to verify they are exposed.
 "test/*.py" = ["F401"]
+# Stub files re-export the dynamic unit names via star-imports.
+"src/baseUnits/**/*.pyi" = ["F401", "F403", "F405"]
 
 [format]
 quote-style = "double"
