@@ -39,6 +39,9 @@ packages = {find = {where = ["src"]}}
 
 [tool.setuptools.package-data]
 "*" = ["*.ipynb"]
+# Ship the PEP 561 marker and type stubs so downstream type-checkers see the
+# dynamically-populated unit names.
+"baseUnits" = ["py.typed", "*.pyi", "systems/*.pyi"]
 
 [tool.pyright]
 # This is a src-layout package. Installed as a setuptools "strict" editable
