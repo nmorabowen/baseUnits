@@ -1,2 +1,11 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Force LF on checkout too, so generated stubs and sources don't flip to
+# CRLF on Windows (silences the autocrlf "LF will be replaced by CRLF" warning).
+*.py text eol=lf
+*.pyi text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.md text eol=lf
+*.ipynb text eol=lf
