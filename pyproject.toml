@@ -39,3 +39,16 @@ packages = {find = {where = ["src"]}}
 
 [tool.setuptools.package-data]
 "*" = ["*.ipynb"]
+# Ship the PEP 561 marker and type stubs so downstream type-checkers see the
+# dynamically-populated unit names.
+"baseUnits" = ["py.typed", "*.pyi", "systems/*.pyi"]
+
+[tool.pyright]
+# This is a src-layout package. Installed as a setuptools "strict" editable
+# install, its imports are served by an import-hook finder
+# (__editable__.baseUnits-*.finder.py) that Pylance/Pyright cannot follow
+# statically, surfacing as `reportMissingImports` for `import baseUnits`.
+# Pointing extraPaths at src lets static analysis resolve the package
+# regardless of how (or whether) it is installed.
+include = ["src", "test"]
+extraPaths = ["src"]
