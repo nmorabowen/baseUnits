@@ -26,6 +26,7 @@ All modules follow the `<force>_<length>_<time>` naming pattern.
 - `baseUnits.systems.kN_m_s` — kN-m-tonne-s
 - `baseUnits.systems.kip_in_s` — kip-inches-s
 - `baseUnits.systems.kgf_m_s` — gravitational metric (mass derived = hyl)
+- `baseUnits.systems.tf_m_s` — tonne-force metric (mass derived = 1000 hyl)
 - `baseUnits.systems.dyne_cm_s` — CGS
 
 ## Quickstart

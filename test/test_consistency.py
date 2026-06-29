@@ -33,6 +33,7 @@ SYSTEMS = [
     ("kN_m_s", "m", "kN", None, "s"),
     ("kip_in_s", "inches", "kip", None, "s"),
     ("kgf_m_s", "m", "kgf", None, "s"),  # derived mass = hyl (unnamed)
+    ("tf_m_s", "m", "tf", None, "s"),  # derived mass = 1000 hyl (unnamed)
     ("dyne_cm_s", "cm", "dyne", None, "s"),  # CGS
 ]
 
@@ -108,6 +109,7 @@ NATURAL_BASES = {
     "kN_m_s": ("kPa", "kJ", "kW"),
     "kip_in_s": ("ksi", None, None),
     "kgf_m_s": (None, None, None),
+    "tf_m_s": (None, None, None),
     "dyne_cm_s": (None, None, None),
 }
 

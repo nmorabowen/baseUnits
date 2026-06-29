@@ -16,7 +16,7 @@ import types
 
 import baseUnits
 
-SYSTEMS = ["N_mm_s", "N_m_s", "kN_m_s", "kip_in_s", "kgf_m_s", "dyne_cm_s"]
+SYSTEMS = ["N_mm_s", "N_m_s", "kN_m_s", "kip_in_s", "kgf_m_s", "tf_m_s", "dyne_cm_s"]
 
 
 def exported_names() -> list[str]:
