@@ -6,7 +6,7 @@ into the active system's base units, and divide by a unit to convert back out.
 
 Other pre-built systems live under ``baseUnits.systems`` and follow the
 ``<force>_<length>_<time>`` naming pattern: ``N_mm_s`` (default), ``N_m_s``,
-``kN_m_s``, ``kip_in_s``, ``kgf_m_s``, ``dyne_cm_s``. For runtime dimensional
+``kN_m_s``, ``kip_in_s``, ``kgf_m_s``, ``tf_m_s``, ``dyne_cm_s``. For runtime dimensional
 safety, use the opt-in ``baseUnits.checked`` layer instead.
 
 Attributes:

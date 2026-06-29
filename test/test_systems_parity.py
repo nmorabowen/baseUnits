@@ -35,6 +35,19 @@ def test_kgf_m_s_weight_identity():
     assert g.kgf_cm2 == pytest.approx(1e4)
 
 
+def test_tf_m_s_force_base():
+    """In tonne-force tf-m-s: tf is the force base and 1 tf = 1000 kgf."""
+    import baseUnits.systems.tf_m_s as t
+
+    assert t.tf == 1.0
+    assert t.BASE == "tf-m-s"
+    assert t.kgf == pytest.approx(1e-3)  # 1 tf = 1000 kgf
+    # 1 kgf/cm^2 = 10 tf/m^2 (the natural, unnamed pressure base).
+    assert t.kgf_cm2 == pytest.approx(10.0)
+    # Consistent system: standard gravity is unchanged.
+    assert t.g == pytest.approx(9.80665)
+
+
 def test_dyne_cm_s_force_base():
     """In CGS, the dyne is the natural force unit (M*L/T^2 with M=g, L=cm)."""
     import baseUnits.systems.dyne_cm_s as cgs

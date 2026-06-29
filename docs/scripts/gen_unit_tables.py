@@ -49,6 +49,16 @@ SYSTEMS = [
         "under standard gravity.",
     ),
     (
+        "tf_m_s",
+        "tf-m-s (tonne-force metric)",
+        "Engineering metric system with tonne-force as the force base "
+        "(1 tf = 1000 kgf). The `kgf-m-s` system scaled up 1000x in force, "
+        "common where large civil/geotechnical loads are quoted in tonnes-force. "
+        "Mass is derived and equals 9806.65 kg (1000 hyl). The natural pressure "
+        "base is `tf/m^2` (~9.80665 Pa), unnamed in the factor table, so "
+        "`kgf_cm2 = 10` (1 kgf/cm^2 = 10 tf/m^2) here.",
+    ),
+    (
         "dyne_cm_s",
         "dyne-cm-gram-s (CGS)",
         "Centimetre-gram-second. Force base is the dyne. Common in physics and "
