@@ -68,8 +68,7 @@ def test_factor_is_exact(dimension, name, exact):
     """Each stored factor is the correctly-rounded double of its definition."""
     stored = getattr(_f, dimension)[name]
     assert stored == _exact(exact), (
-        f"_factors.{dimension}['{name}'] is {stored!r}, "
-        f"expected the exact value {_exact(exact)!r}"
+        f"_factors.{dimension}['{name}'] is {stored!r}, expected the exact value {_exact(exact)!r}"
     )
 
 
