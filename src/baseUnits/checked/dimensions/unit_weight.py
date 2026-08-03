@@ -2,14 +2,20 @@
 Defines all Unit Weight (or Specific Weight) units.
 Dimension: Force / Length^3  (which is Mass / (Length^2 * Time^2))
 Base Unit: N / mm^3
+
+Factors come from ``baseUnits._factors`` so this layer cannot drift away from
+the float layer; see :mod:`baseUnits.checked._derived`.
 """
 
+from .._derived import factors
 from ..dimension import Dimension
 from ..units import Unit, register_base_unit
 
 # 1. Define the compound dimension for Unit Weight
 #    Force / Length^3 = (Mass * Length / Time^2) / Length^3
 UNIT_WEIGHT_DIMENSION = Dimension("Mass") / ((Dimension("Length") ** 2) * (Dimension("Time") ** 2))
+
+_F = factors("UNIT_WEIGHT", "N_per_mm3")
 
 # 2. Define and register the base unit for this dimension
 #    Base Force = N
@@ -20,25 +26,31 @@ N_per_mm3 = register_base_unit(
         name="Newton per cubic millimeter",
         symbol="N/mm³",
         dimension=UNIT_WEIGHT_DIMENSION,
-        factor=1.0,
+        factor=_F["N_per_mm3"],
     )
 )
 
 # 3. Define other common Unit Weight units
 #    1 N/m^3 = (1 N) / ( (1e3 mm)^3 ) = 1 / 1e9 = 1e-9 N/mm³
 N_per_m3 = Unit(
-    name="Newton per cubic meter", symbol="N/m³", dimension=UNIT_WEIGHT_DIMENSION, factor=1e-9
+    name="Newton per cubic meter",
+    symbol="N/m³",
+    dimension=UNIT_WEIGHT_DIMENSION,
+    factor=_F["N_per_m3"],
 )
 
 #    1 kN/m^3 = (1e3 N) / ( (1e3 mm)^3 ) = 1e3 / 1e9 = 1e-6 N/mm³
 kN_per_m3 = Unit(
-    name="kiloNewton per cubic meter", symbol="kN/m³", dimension=UNIT_WEIGHT_DIMENSION, factor=1e-6
+    name="kiloNewton per cubic meter",
+    symbol="kN/m³",
+    dimension=UNIT_WEIGHT_DIMENSION,
+    factor=_F["kN_per_m3"],
 )
 
-#    1 kgf/m^3 = (9.807 N) / ( (1e3 mm)^3 ) = 9.807 / 1e9 = 9.807e-9 N/mm³
+#    1 kgf/m^3 = (9.80665 N) / ( (1e3 mm)^3 ) = 9.80665e-9 N/mm³
 kgf_per_m3 = Unit(
     name="kg-force per cubic meter",
     symbol="kgf/m³",
     dimension=UNIT_WEIGHT_DIMENSION,
-    factor=9.807e-9,
+    factor=_F["kgf_per_m3"],
 )

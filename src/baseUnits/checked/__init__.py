@@ -67,7 +67,10 @@ __all__ = [
     "GPa",
     "kgf_cm2",
     "Pa",
+    "bar",
+    "atm",
     "ksi",
+    "psi",
     # Energy
     "J",
     "kJ",
@@ -93,6 +96,7 @@ __all__ = [
     "year",
     # Angle
     "radian",
+    "rad",
     "degree",
     # Temperature
     "K",
@@ -103,6 +107,7 @@ __all__ = [
     "kg_per_m3",
     "gr_per_cm3",
     "tonne_per_m3",
+    "lb_per_ft3",
     # Unit Weight
     "N_per_mm3",
     "N_per_m3",

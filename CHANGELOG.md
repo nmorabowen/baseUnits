@@ -9,11 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
--
+- `psi`, `bar`, `atm`, `lb_per_ft3`, and `rad` to `baseUnits.checked`, which had
+  fallen behind the float layer's unit list. `psi` matters for ACI 318 work.
+- `test/test_exact_factors.py`, pinning every inch-pound and gravitational
+  factor to a `Decimal` recomputation from the four exact defining constants
+  (1 in = 25.4 mm, 1 lb = 0.45359237 kg, g0 = 9.80665 m/s², 1 lbf = lb·g0), and
+  asserting the checked layer matches the float layer for every unit.
 
 ### Changed
 
--
+- `baseUnits.checked` now derives its conversion factors from `_factors.py`
+  instead of hard-coding its own copies. The duplicated copies had drifted to
+  four significant figures (`lbf = 4.448`, `kip = 4448.0`, `ksi = 6.895`,
+  `kgf_cm2 = 0.09807`, `kgf = 9.807`, `lb = 453.6e-6`), a ~1e-4 relative error
+  large enough to move a design-code capacity check. Anyone importing from
+  `baseUnits.checked` sees corrected values; the float layer is unaffected.
+- `ksi`, `psi`, and `lb_per_ft3` in `_factors.py` were truncated a few digits
+  short of the nearest double and are now correctly rounded (relative
+  corrections of 5e-14, 5e-14, and 2e-12).
 
 ### Removed
 
