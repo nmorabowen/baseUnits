@@ -9,6 +9,21 @@ SI values by the chosen system's base SI values (see
 
 Edit this file to add a new unit; every pre-built system picks it up
 automatically on the next build.
+
+Every value here is the correctly-rounded double of its exact definition, not
+a convenience rounding. The inch-pound and gravitational units all descend
+from four exactly-defined constants:
+
+    1 in  = 25.4 mm                (exact, NIST HB 44 / international inch)
+    1 lb  = 0.45359237 kg          (exact, international avoirdupois pound)
+    1 lbf = 4.4482216152605 N      (exact, lb * g0)
+    g0    = 9.80665 m/s^2          (exact, standard gravity, CGPM 1901)
+
+Design codes that mix systems (ACI 318, AISC 360) are written against these
+exact factors, so a four-significant-figure rounding such as ``lbf = 4.448``
+shows up as a ~1e-4 relative error in downstream capacity checks. Tests in
+``test/test_exact_factors.py`` pin every derived value against a Decimal
+recomputation from the four constants above; do not "simplify" these literals.
 """
 
 import math
@@ -57,8 +72,8 @@ PRESSURE = {  # in Pa
     "MPa": 1e6,
     "GPa": 1e9,
     "kgf_cm2": 98066.5,
-    "ksi": 6894757.293168,
-    "psi": 6894.757293168,
+    "ksi": 6894757.293168361,  # 1000 lbf / in^2, exact to double precision
+    "psi": 6894.757293168362,  # lbf / in^2, exact to double precision
     "bar": 1e5,
     "atm": 101325.0,
 }
@@ -84,7 +99,7 @@ DENSITY = {  # in kg/m^3
     "gr_per_cm3": 1000.0,
     "tonne_per_m3": 1000.0,
     "tonne_per_mm3": 1e12,
-    "lb_per_ft3": 16.018463374,
+    "lb_per_ft3": 16.018463373960138,  # lb / ft^3, exact to double precision
 }
 UNIT_WEIGHT = {  # in N/m^3
     "N_per_m3": 1.0,
