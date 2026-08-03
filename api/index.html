@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2253,6 +2253,22 @@ SI values by the chosen system's base SI values (see
 :func:<code>baseUnits._make_system.make_system</code>).</p>
 <p>Edit this file to add a new unit; every pre-built system picks it up
 automatically on the next build.</p>
+<p>Every value here is the correctly-rounded double of its exact definition, not
+a convenience rounding. The inch-pound and gravitational units all descend
+from four exactly-defined constants:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>1 in  = 25.4 mm                (exact, NIST HB 44 / international inch)
+1 lb  = 0.45359237 kg          (exact, international avoirdupois pound)
+1 lbf = 4.4482216152605 N      (exact, lb * g0)
+g0    = 9.80665 m/s^2          (exact, standard gravity, CGPM 1901)
+</code></pre></div></td></tr></table></div>
+<p>Design codes that mix systems (ACI 318, AISC 360) are written against these
+exact factors, so a four-significant-figure rounding such as <code>lbf = 4.448</code>
+shows up as a ~1e-4 relative error in downstream capacity checks. Tests in
+<code>test/test_exact_factors.py</code> pin every derived value against a Decimal
+recomputation from the four constants above; do not "simplify" these literals.</p>
 
 
 
@@ -3172,7 +3188,7 @@ base unit from the simple base units.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
