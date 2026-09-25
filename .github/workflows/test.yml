@@ -29,3 +29,10 @@ jobs:
 
       - name: Lint
         run: ruff check .
+
+      # Quirk-pattern lint (docs/agent-surface.md): lessons that name a
+      # greppable pattern, enforced. Q1 = every system module is registered in
+      # every site that lists the systems. Last in the job so a red lint never
+      # hides the gates above; its self-test runs inside `pytest -q`.
+      - name: Quirk-pattern lint
+        run: python scripts/check_quirk_patterns.py

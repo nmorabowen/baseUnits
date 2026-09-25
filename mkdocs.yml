@@ -3,6 +3,10 @@ site_description: Float-based unit conversion factors for consistent unit system
 repo_url: https://github.com/nmorabowen/baseUnits
 repo_name: nmorabowen/baseUnits
 
+# Contributor/agent plan docs live in docs/ but are not end-user pages.
+exclude_docs: |
+  agent-surface.md
+
 theme:
   name: material
   features:
