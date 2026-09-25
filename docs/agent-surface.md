@@ -191,8 +191,12 @@ caught by exactly one self-test case (all run 2026-09-25):
 | `PYTHONPATH=src mkdocs build --strict` | passes; this page is not in the built site |
 | Lint runtime on the tree | about 1 s wall time on Windows, mostly interpreter start-up |
 
-The lint also runs under Python 3.10. Python 3.9 (CI's minimum) is *not
-verified locally*; the code avoids 3.10+ syntax, and ruff targets py39.
+**CI on the draft branch** (run 36194144605, Python 3.9, 3.11 and 3.12):
+
+- "Run tests" passed 109 on all three versions.
+- "Lint" (`ruff check .` with CI's latest ruff) passed.
+- "Quirk-pattern lint" failed, as expected, with exactly the three
+  `docs/architecture.md` findings.
 
 **Pointer check:** `new-system` has 4 heading pointers and `change-factors`
 has 5, and all of them resolve to `AGENTS.md` headings. The rule references
