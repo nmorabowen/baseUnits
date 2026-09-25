@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
     the cross-repo contract and lessons learned.
   - Two task guides under `.claude/skills/`.
   - `scripts/check_quirk_patterns.py`, a CI lint that fails when a system
-    module is missing from any place that lists the systems.
+    module is missing from one of the four hand-maintained lists of the
+    systems.
 
   See `docs/agent-surface.md`.
 

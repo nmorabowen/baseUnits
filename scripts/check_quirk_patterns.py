@@ -2,36 +2,46 @@
 
 Turns a lesson that names a greppable pattern into a CI failure, so a known
 trap fails the build instead of relying on someone re-reading AGENTS.md.
-Dependency-free (standard library only); runs in well under a second.
+Dependency-free (standard library only).
 
   Q1 registry   Every pre-built system module src/baseUnits/systems/<name>.py
-                must be listed in every place the repo enumerates the systems:
+                must appear in each hand-maintained list of the systems:
 
-                  stub           src/baseUnits/systems/<name>.pyi exists
-                                 (only once stubs exist: _unit_consts.pyi)
-                  gen_stubs      scripts/gen_stubs.py            SYSTEMS
-                  consistency    test/test_consistency.py        SYSTEMS
-                  natural_bases  test/test_consistency.py        NATURAL_BASES
-                  docs_tables    docs/scripts/gen_unit_tables.py SYSTEMS
-                  package_doc    src/baseUnits/__init__.py       module docstring
-                  readme         README.md
-                  architecture   docs/architecture.md
+                  consistency   test/test_consistency.py         SYSTEMS
+                                (a miss: the system escapes "the one rule")
+                  docs_tables   docs/scripts/gen_unit_tables.py  SYSTEMS
+                                (a miss: the published Systems page omits it)
+                  package_doc   src/baseUnits/__init__.py, the docstring
+                                paragraph that names the pre-built systems
+                  readme        README.md, the "## Available systems" list
 
-                Python sites are read with `ast` (a name in a comment does not
-                count); text sites need the name as a whole word (`N_m_s` is
-                not satisfied by `kN_m_s`). A site whose file or variable is
-                absent cannot be read and is skipped, never guessed.
-                Incident: 862b7e0 had eight system modules while README.md
-                listed four and the package docstring three (fixed in
-                d1a655f); docs/architecture.md has listed four systems since,
-                missed by three system additions (AGENTS.md, Lessons,
-                "Adding a system: the registration sites drift").
-                Waive one site for one system with a comment in that system's
-                module:
+                Only the list itself counts. Python lists are read with `ast`:
+                an entry is a str, a tuple/list whose FIRST item is a str, or
+                pytest.param(<str>, ...). README entries are the bullets
+                "- `baseUnits.systems.<name>`" inside the "Available systems"
+                section; docstring entries are the ``<name>`` tokens of the
+                paragraph that says "pre-built systems". A name mentioned
+                anywhere else (a code example, a comment, another paragraph)
+                does not count.
+
+                These are fixed, known sites in this repo's own files, so a
+                site that is missing or cannot be read is itself a finding.
+                This departs from "stay silent when you can't read a case",
+                which is for scans over arbitrary code: a silently skipped
+                site here would switch the rule off without anyone noticing.
+
+                Incident: at 862b7e0 there were eight system modules while
+                README.md listed four and the package docstring three (fixed
+                in d1a655f). See AGENTS.md, Lessons, "Adding a system: the
+                registration sites drift".
+
+                Waive one site for one system with a real comment (not text
+                inside a string) in that system's module:
                     # baseunits-lint: registry-ok <site> <reason>
 
-A waiver needs a reason of at least 12 characters and a known site name, and a
-waiver that no longer suppresses anything is itself a finding (stale).
+A waiver needs a known site name and a reason of at least 12 characters. A
+duplicate waiver, or a waiver that no longer suppresses anything (stale), is
+itself a finding.
 
 Usage:
     python scripts/check_quirk_patterns.py               # exit 1 on any finding
@@ -42,14 +52,18 @@ from __future__ import annotations
 
 import argparse
 import ast
+import io
 import re
 import sys
+import tokenize
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional
+from typing import Callable, NamedTuple, Union
 
 SYSTEMS_DIR = "src/baseUnits/systems"
 WAIVER_RE = re.compile(r"#\s*baseunits-lint:\s*registry-ok\b[ \t]*(\S*)[ \t]*(.*)")
 MIN_REASON = 12
+IDENT = r"[A-Za-z_][A-Za-z0-9_]*"
+GUIDE = ".claude/skills/baseunits-new-system/SKILL.md"
 
 
 class Finding(NamedTuple):
@@ -62,9 +76,28 @@ class Finding(NamedTuple):
         return f"{self.path}:{self.line}: {self.rule}: {self.message}"
 
 
+class Reading(NamedTuple):
+    """A site that was read: the systems it lists, and the line of the list."""
+
+    path: str
+    line: int
+    names: set[str]
+
+
+class Unreadable(NamedTuple):
+    """A site that could not be read; reported as a finding."""
+
+    path: str
+    line: int
+    why: str
+
+
+SiteResult = Union[Reading, Unreadable]
+
+
 def _read(path: Path) -> str | None:
     try:
-        return path.read_text(encoding="utf-8")
+        return path.read_text(encoding="utf-8-sig")
     except (OSError, UnicodeDecodeError):
         return None
 
@@ -79,109 +112,130 @@ def _parse(path: Path) -> ast.Module | None:
         return None
 
 
-def _module_value(tree: ast.Module, var: str) -> ast.expr | None:
-    """Value assigned to module-level `var` (plain or annotated), else None."""
-    for node in tree.body:
-        if isinstance(node, ast.Assign):
-            if any(isinstance(t, ast.Name) and t.id == var for t in node.targets):
-                return node.value
-        elif (
-            isinstance(node, ast.AnnAssign)
-            and isinstance(node.target, ast.Name)
-            and node.target.id == var
-            and node.value is not None
-        ):
-            return node.value
-    return None
-
-
 def _str_const(node: ast.expr) -> str | None:
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         return node.value
     return None
 
 
+def _entry_name(elt: ast.expr) -> str | None:
+    """System name of one list entry, or None if the entry has another shape."""
+    if isinstance(elt, (ast.Tuple, ast.List)):
+        return _str_const(elt.elts[0]) if elt.elts else None
+    if isinstance(elt, ast.Call):
+        func = elt.func
+        is_param = (isinstance(func, ast.Attribute) and func.attr == "param") or (
+            isinstance(func, ast.Name) and func.id == "param"
+        )
+        if not is_param or not elt.args:
+            return None
+        return _entry_name(elt.args[0])
+    return _str_const(elt)
+
+
 def _names_in(value: ast.expr) -> set[str] | None:
-    """System names in a list/tuple of str, a list/tuple of tuples whose first
-    item is a str, or the str keys of a dict. None if ANY entry has another
-    shape (e.g. a dict keyed by (force, length) tuples, as test_consistency's
-    NATURAL_BASES was before 47b6682): an unreadable site is skipped."""
-    if isinstance(value, ast.Dict):
-        names: set[str] = set()
-        for key in value.keys:
-            name = _str_const(key) if key is not None else None
-            if name is None:
-                return None
-            names.add(name)
-        return names
+    """Names in a literal list/tuple of entries; None if any entry is unreadable."""
     if not isinstance(value, (ast.List, ast.Tuple)):
         return None
-    names = set()
+    names: set[str] = set()
     for elt in value.elts:
-        if isinstance(elt, (ast.Tuple, ast.List)) and elt.elts:
-            elt = elt.elts[0]
-        name = _str_const(elt)
+        name = _entry_name(elt)
         if name is None:
             return None
         names.add(name)
     return names
 
 
-def _word_in(name: str, text: str) -> bool:
-    return re.search(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])", text) is not None
+def _touches(stmt: ast.stmt, var: str) -> bool:
+    """True if a module-level statement assigns to `var` or calls a method on it."""
+    targets: list[ast.expr] = []
+    if isinstance(stmt, ast.Assign):
+        targets = list(stmt.targets)
+    elif isinstance(stmt, (ast.AnnAssign, ast.AugAssign)):
+        targets = [stmt.target]
+    elif isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call):
+        func = stmt.value.func
+        if isinstance(func, ast.Attribute):
+            targets = [func.value]
+    return any(isinstance(t, ast.Name) and t.id == var for t in targets)
 
 
-# A site reader returns (path shown in findings, line, names-or-None). For text
-# sites the "names" are every system name found as a whole word.
-SiteReader = Callable[[Path, list[str]], Optional[tuple[str, int, set[str]]]]
-
-
-def _py_site(rel: str, var: str) -> SiteReader:
-    def read(root: Path, systems: list[str]) -> tuple[str, int, set[str]] | None:
+def _py_site(rel: str, var: str) -> Callable[[Path], SiteResult]:
+    def read(root: Path) -> SiteResult:
         tree = _parse(root / rel)
         if tree is None:
-            return None
-        value = _module_value(tree, var)
-        if value is None:
-            return None
-        names = _names_in(value)
-        if names is None:
-            return None
-        return rel, value.lineno, names
+            return Unreadable(rel, 1, "file is missing, not UTF-8, or not valid Python")
+        stmts = [s for s in tree.body if _touches(s, var)]
+        if not stmts:
+            return Unreadable(rel, 1, f"no module-level {var} assignment")
+        first = stmts[0]
+        if len(stmts) > 1:
+            return Unreadable(rel, stmts[1].lineno, f"{var} is modified after it is assigned")
+        value = first.value if isinstance(first, (ast.Assign, ast.AnnAssign)) else None
+        names = _names_in(value) if value is not None else None
+        if value is None or names is None:
+            return Unreadable(
+                rel, first.lineno, f"{var} is not a literal list of entries the lint can read"
+            )
+        return Reading(rel, value.lineno, names)
 
     return read
 
 
-def _text_site(rel: str, docstring_only: bool = False) -> SiteReader:
-    def read(root: Path, systems: list[str]) -> tuple[str, int, set[str]] | None:
-        if docstring_only:
-            tree = _parse(root / rel)
-            text = ast.get_docstring(tree) if tree is not None else None
-        else:
-            text = _read(root / rel)
-        if text is None:
-            return None
-        return rel, 1, {s for s in systems if _word_in(s, text)}
+def _readme_site(root: Path) -> SiteResult:
+    rel = "README.md"
+    text = _read(root / rel)
+    if text is None:
+        return Unreadable(rel, 1, "file is missing or not UTF-8")
+    lines = text.splitlines()
+    heading = next(
+        (i for i, line in enumerate(lines) if re.match(r"^##\s+Available systems\s*$", line)),
+        None,
+    )
+    if heading is None:
+        return Unreadable(rel, 1, 'no "## Available systems" section')
+    names: set[str] = set()
+    in_fence = False
+    for line in lines[heading + 1 :]:
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if re.match(r"^#{1,6}\s", line):
+            break
+        m = re.match(rf"^[-*]\s+`baseUnits\.systems\.({IDENT})`", line)
+        if m:
+            names.add(m.group(1))
+    if not names:
+        return Unreadable(rel, heading + 1, '"Available systems" lists no systems')
+    return Reading(rel, heading + 1, names)
 
-    return read
+
+def _package_doc_site(root: Path) -> SiteResult:
+    rel = "src/baseUnits/__init__.py"
+    tree = _parse(root / rel)
+    if tree is None:
+        return Unreadable(rel, 1, "file is missing, not UTF-8, or not valid Python")
+    first = tree.body[0] if tree.body else None
+    doc = _str_const(first.value) if isinstance(first, ast.Expr) else None
+    if first is None or doc is None:
+        return Unreadable(rel, 1, "no module docstring")
+    for para in re.split(r"\n[ \t]*\n", doc):
+        if "pre-built systems" in para.lower():
+            names = set(re.findall(rf"``({IDENT})``", para))
+            line = first.lineno + doc.count("\n", 0, doc.find(para))
+            if not names:
+                return Unreadable(rel, line, "the pre-built systems paragraph names no systems")
+            return Reading(rel, line, names)
+    return Unreadable(rel, first.lineno, 'no docstring paragraph mentions "pre-built systems"')
 
 
-def _stub_site(root: Path, systems: list[str]) -> tuple[str, int, set[str]] | None:
-    if not (root / "src/baseUnits/_unit_consts.pyi").is_file():
-        return None  # the tree has no type stubs yet; nothing to check
-    have = {s for s in systems if (root / SYSTEMS_DIR / f"{s}.pyi").is_file()}
-    return f"{SYSTEMS_DIR}/<name>.pyi", 1, have
-
-
-SITES: dict[str, SiteReader] = {
-    "stub": _stub_site,
-    "gen_stubs": _py_site("scripts/gen_stubs.py", "SYSTEMS"),
+SITES: dict[str, Callable[[Path], SiteResult]] = {
     "consistency": _py_site("test/test_consistency.py", "SYSTEMS"),
-    "natural_bases": _py_site("test/test_consistency.py", "NATURAL_BASES"),
     "docs_tables": _py_site("docs/scripts/gen_unit_tables.py", "SYSTEMS"),
-    "package_doc": _text_site("src/baseUnits/__init__.py", docstring_only=True),
-    "readme": _text_site("README.md"),
-    "architecture": _text_site("docs/architecture.md"),
+    "package_doc": _package_doc_site,
+    "readme": _readme_site,
 }
 
 
@@ -193,46 +247,65 @@ def system_modules(root: Path) -> list[str]:
     return sorted(p.stem for p in sysdir.glob("*.py") if not p.stem.startswith("_"))
 
 
-def _waivers(root: Path, name: str) -> list[tuple[int, str, str]]:
-    """(line, site, reason) for every registry waiver in a system module."""
-    text = _read(root / SYSTEMS_DIR / f"{name}.py") or ""
+def _waivers(root: Path, name: str) -> list[tuple[int, str, str]] | None:
+    """(line, site, reason) for every registry waiver COMMENT in a system module.
+
+    Only real comments count (tokenize), so text inside a docstring is not a
+    waiver. None if the module cannot be tokenized.
+    """
+    text = _read(root / SYSTEMS_DIR / f"{name}.py")
+    if text is None:
+        return None
     out = []
-    for lineno, line in enumerate(text.splitlines(), start=1):
-        m = WAIVER_RE.search(line)
-        if m:
-            out.append((lineno, m.group(1), m.group(2).strip()))
+    try:
+        for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+            if tok.type == tokenize.COMMENT:
+                m = WAIVER_RE.search(tok.string)
+                if m:
+                    out.append((tok.start[0], m.group(1), m.group(2).strip()))
+    except (tokenize.TokenError, SyntaxError):
+        return None
     return out
 
 
 def check_registry(root: Path) -> list[Finding]:
     systems = system_modules(root)
     findings: list[Finding] = []
-    readings = {site: reader(root, systems) for site, reader in SITES.items()}
+    readings: dict[str, Reading] = {}
+    for site, reader in SITES.items():
+        result = reader(root)
+        if isinstance(result, Unreadable):
+            findings.append(
+                Finding(result.path, result.line, "Q1", f"cannot read site {site}: {result.why}")
+            )
+        else:
+            readings[site] = result
     for name in systems:
         module = f"{SYSTEMS_DIR}/{name}.py"
         waived: dict[str, int] = {}
-        for lineno, site, reason in _waivers(root, name):
+        waivers = _waivers(root, name)
+        if waivers is None:
+            findings.append(Finding(module, 1, "Q1", "cannot tokenize module to read waivers"))
+            waivers = []
+        for lineno, site, reason in waivers:
             if site not in SITES:
-                findings.append(
-                    Finding(module, lineno, "Q1", f"registry waiver names unknown site {site!r}")
-                )
+                message = f"registry waiver names unknown site {site!r}"
             elif len(reason) < MIN_REASON:
-                findings.append(
-                    Finding(
-                        module,
-                        lineno,
-                        "Q1",
-                        f"registry waiver for {site!r} needs a reason of at least "
-                        f"{MIN_REASON} characters",
-                    )
+                message = (
+                    f"registry waiver for {site!r} needs a reason of at least "
+                    f"{MIN_REASON} characters"
                 )
+            elif site in waived:
+                message = f"duplicate registry waiver for {site!r} (first at line {waived[site]})"
             else:
                 waived[site] = lineno
-        for site, reading in readings.items():
-            if reading is None:
                 continue
-            where, line, names = reading
-            listed = name in names
+            findings.append(Finding(module, lineno, "Q1", message))
+        for site in SITES:
+            reading = readings.get(site)
+            if reading is None:
+                continue  # already reported as "cannot read site"
+            listed = name in reading.names
             if site in waived:
                 if listed:
                     findings.append(
@@ -240,18 +313,18 @@ def check_registry(root: Path) -> list[Finding]:
                             module,
                             waived[site],
                             "Q1",
-                            f"stale registry waiver: {name!r} is listed in {site} ({where})",
+                            f"stale registry waiver: {name!r} is listed in {site} "
+                            f"({reading.path}:{reading.line})",
                         )
                     )
-                continue
-            if not listed:
+            elif not listed:
                 findings.append(
                     Finding(
-                        where,
-                        line,
+                        reading.path,
+                        reading.line,
                         "Q1",
-                        f"system {name!r} ({module}) is not listed in {site}; register "
-                        f"it in every site (.claude/skills/baseunits-new-system/SKILL.md)",
+                        f"system {name!r} ({module}) is not listed in {site}; "
+                        f"register it in every site ({GUIDE})",
                     )
                 )
     return findings

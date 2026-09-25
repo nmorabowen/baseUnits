@@ -1,14 +1,17 @@
 """Self-test for scripts/check_quirk_patterns.py (see docs/agent-surface.md).
 
 Each case builds a small synthetic repository tree and asserts that rule Q1
-flags the bug shape it exists for, passes the fixed shape, and stays silent on
-shapes it cannot read. Lives in test/ on purpose so the normal ``pytest -q``
-(and CI) runs it; the lint itself runs on the real tree as its own CI step.
+flags the bug shape it exists for, passes the fixed shape, reports a site it
+cannot read, and handles waivers. Every hole found by the adversarial review
+(docs/agent-surface.md, Revision 2) has a case here. Lives in test/ on purpose
+so the normal ``pytest -q`` (and CI) runs it; the lint itself runs on the real
+tree as its own, last CI step.
 """
 
 from __future__ import annotations
 
 import importlib.util
+from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
@@ -20,42 +23,72 @@ cq = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cq)
 
 SYSTEMS = ["N_mm_s", "N_m_s", "kN_m_s"]
+CONSISTENCY = "test/test_consistency.py"
+TABLES = "docs/scripts/gen_unit_tables.py"
+INIT = "src/baseUnits/__init__.py"
+README = "README.md"
+
+
+def _consistency(rows: list[str]) -> str:
+    body = "".join(f"    {r},\n" for r in rows)
+    return f'"""The one rule."""\n\nimport pytest\n\nSYSTEMS = [\n{body}]\n'
+
+
+def _row(n: str) -> str:
+    return f'("{n}", "mm", "N", None, "s")'
+
+
+def _init(listed: list[str], extra: str = "") -> str:
+    names = ", ".join(f"``{n}``" for n in listed)
+    return (
+        f'"""baseUnits.\n\nThe default system is re-exported.\n\n'
+        f"Other pre-built systems live under ``baseUnits.systems``: {names}.\n"
+        f'{extra}"""\n\nfrom .systems.N_mm_s import *\n'
+    )
+
+
+def _readme(listed: list[str], after: str = "") -> str:
+    items = "".join(f"- `baseUnits.systems.{n}` - label\n" for n in listed)
+    return f"# baseUnits\n\n## Available systems\n\n{items}\n## Quickstart\n\n{after}"
 
 
 def _files(names: list[str]) -> dict[str, str]:
     """A tree in which every system is registered in every site."""
-    files: dict[str, str] = {"src/baseUnits/_unit_consts.pyi": "BASE: str\n"}
-    for n in names:
-        files[f"src/baseUnits/systems/{n}.py"] = f'"""{n} system."""\n'
-        files[f"src/baseUnits/systems/{n}.pyi"] = "from .._unit_consts import *\n"
+    files: dict[str, str] = {f"src/baseUnits/systems/{n}.py": f'"""{n}."""\n' for n in names}
     files["src/baseUnits/systems/__init__.py"] = ""
-    files["scripts/gen_stubs.py"] = f"SYSTEMS = {names!r}\n"
-    rows = "".join(f'    ("{n}", "mm", "N", None, "s"),\n' for n in names)
-    bases = "".join(f'    "{n}": (None, None, None),\n' for n in names)
-    files["test/test_consistency.py"] = f"SYSTEMS = [\n{rows}]\n\nNATURAL_BASES = {{\n{bases}}}\n"
-    tables = "".join(f'    ("{n}", "label", "prose"),\n' for n in names)
-    files["docs/scripts/gen_unit_tables.py"] = f"SYSTEMS = [\n{tables}]\n"
-    listed = ", ".join(f"``{n}``" for n in names)
-    files["src/baseUnits/__init__.py"] = (
-        f'"""baseUnits.\n\nSystems: {listed}.\n"""\n\nfrom .systems.N_mm_s import *\n'
-    )
-    files["README.md"] = "".join(f"- `baseUnits.systems.{n}`\n" for n in names)
-    files["docs/architecture.md"] = f"Available out of the box: {listed}.\n"
+    files[CONSISTENCY] = _consistency([_row(n) for n in names])
+    rows = "".join(f'    ("{n}", "label", "prose"),\n' for n in names)
+    files[TABLES] = f"SYSTEMS = [\n{rows}]\n"
+    files[INIT] = _init(names)
+    files[README] = _readme(names)
     return files
 
 
-def _lint(tmp_path: Path, files: dict[str, str]) -> list[str]:
-    for rel, text in files.items():
-        p = tmp_path / rel
+def _write(root: Path, files: Mapping[str, str | bytes]) -> Path:
+    for rel, content in files.items():
+        p = root / rel
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(text, encoding="utf-8")
-    return [str(f) for f in cq.check_registry(tmp_path)]
+        if isinstance(content, bytes):
+            p.write_bytes(content)
+        else:
+            p.write_text(content, encoding="utf-8")
+    return root
 
 
-def _only(findings: list[str], site: str, system: str) -> None:
-    assert len(findings) == 1, findings
-    assert f"system '{system}'" in findings[0], findings
-    assert f"not listed in {site};" in findings[0], findings
+def _lint(tmp_path: Path, files: dict) -> list[str]:
+    return [str(f) for f in cq.check_registry(_write(tmp_path, files))]
+
+
+def _only(found: list[str], site: str, system: str, where: str) -> None:
+    assert len(found) == 1, found
+    assert found[0].startswith(where + ": Q1:"), found
+    assert f"system '{system}'" in found[0] and f"not listed in {site};" in found[0], found
+
+
+def _unreadable(found: list[str], site: str, where: str) -> None:
+    assert len(found) == 1, found
+    assert found[0].startswith(where + ": Q1:"), found
+    assert f"cannot read site {site}:" in found[0], found
 
 
 # --------------------------------------------------------------- must pass
@@ -71,111 +104,173 @@ def test_private_modules_and_init_are_not_systems(tmp_path):
 
 def test_annotated_assignment_is_read(tmp_path):
     files = _files(SYSTEMS)
-    files["scripts/gen_stubs.py"] = f"SYSTEMS: list[str] = {SYSTEMS!r}\n"
+    files[TABLES] = f"SYSTEMS: list[str] = {SYSTEMS!r}\n"
     assert _lint(tmp_path, files) == []
 
 
-# ------------------------------------------------- must flag (one per site)
-def test_flags_readme_missing_a_system(tmp_path):
+def test_pytest_param_row_is_read_by_its_first_argument(tmp_path):
+    files = _files(SYSTEMS)
+    rows = [_row("N_mm_s"), _row("N_m_s"), 'pytest.param("kN_m_s", "m", "kN", None, "s", id="x")']
+    files[CONSISTENCY] = _consistency(rows)
+    assert _lint(tmp_path, files) == []
+
+
+def test_utf8_bom_is_read(tmp_path):
+    files: dict = _files(SYSTEMS)
+    files[CONSISTENCY] = b"\xef\xbb\xbf" + files[CONSISTENCY].encode("utf-8")
+    assert _lint(tmp_path, files) == []
+
+
+def test_readme_code_fence_with_hash_lines_does_not_end_the_section(tmp_path):
+    files = _files(SYSTEMS)
+    items = "".join(f"- `baseUnits.systems.{n}` - label\n" for n in SYSTEMS[1:])
+    files[README] = (
+        "## Available systems\n\n- `baseUnits.systems.N_mm_s` - default\n\n"
+        f"```bash\n# a comment line\n```\n\n{items}\n## Quickstart\n"
+    )
+    assert _lint(tmp_path, files) == []
+
+
+# ------------------------------------------------- must flag (bug shapes)
+def test_readme_missing_a_system_is_flagged_at_its_heading(tmp_path):
     """The 862b7e0 shape: modules added, README list not updated."""
     files = _files(SYSTEMS)
-    files["README.md"] = "- `baseUnits.systems.N_mm_s`\n- `baseUnits.systems.N_m_s`\n"
-    _only(_lint(tmp_path, files), "readme", "kN_m_s")
+    files[README] = _readme(["N_mm_s", "N_m_s"])
+    _only(_lint(tmp_path, files), "readme", "kN_m_s", "README.md:3")
 
 
-def test_flags_architecture_missing_a_system(tmp_path):
-    """The live shape: docs/architecture.md stuck on an older list."""
+def test_readme_mention_outside_the_list_does_not_count(tmp_path):
+    """Review finding 1: a code example naming the system is not the list."""
     files = _files(SYSTEMS)
-    files["docs/architecture.md"] = "Available out of the box: `N_mm_s`, `N_m_s`.\n"
-    _only(_lint(tmp_path, files), "architecture", "kN_m_s")
-
-
-def test_package_doc_needs_the_docstring_not_the_code(tmp_path):
-    """Importing N_mm_s in code does not count; the docstring must name it."""
-    files = _files(SYSTEMS)
-    files["src/baseUnits/__init__.py"] = (
-        '"""baseUnits.\n\nOther systems: ``N_m_s``, ``kN_m_s``.\n"""\n\n'
-        "from .systems.N_mm_s import *\n"
+    files[README] = _readme(
+        ["N_mm_s", "N_m_s"], after="```python\nfrom baseUnits.systems.kN_m_s import m\n```\n"
     )
-    _only(_lint(tmp_path, files), "package_doc", "N_mm_s")
+    _only(_lint(tmp_path, files), "readme", "kN_m_s", "README.md:3")
 
 
-def test_flags_gen_stubs_missing_a_system(tmp_path):
+def test_readme_list_after_the_next_heading_does_not_count(tmp_path):
     files = _files(SYSTEMS)
-    files["scripts/gen_stubs.py"] = 'SYSTEMS = ["N_mm_s", "N_m_s"]\n'
-    _only(_lint(tmp_path, files), "gen_stubs", "kN_m_s")
+    files[README] = _readme(["N_mm_s", "N_m_s"], after="- `baseUnits.systems.kN_m_s` - x\n")
+    _only(_lint(tmp_path, files), "readme", "kN_m_s", "README.md:3")
 
 
-def test_flags_consistency_and_natural_bases(tmp_path):
+def test_readme_whole_identifier_kN_m_s_does_not_satisfy_N_m_s(tmp_path):
     files = _files(SYSTEMS)
-    files["test/test_consistency.py"] = (
-        'SYSTEMS = [("N_mm_s", "mm", "N", None, "s"), ("N_m_s", "m", "N", None, "s")]\n'
-        'NATURAL_BASES = {"N_mm_s": (1,), "N_m_s": (1,)}\n'
-    )
-    found = _lint(tmp_path, files)
-    assert len(found) == 2, found
-    assert any("not listed in consistency;" in f for f in found)
-    assert any("not listed in natural_bases;" in f for f in found)
+    files[README] = _readme(["N_mm_s", "kN_m_s"])
+    _only(_lint(tmp_path, files), "readme", "N_m_s", "README.md:3")
 
 
-def test_flags_docs_tables_missing_a_system(tmp_path):
+def test_package_doc_needs_the_systems_paragraph(tmp_path):
+    """The code imports N_mm_s and another paragraph names it: neither counts."""
     files = _files(SYSTEMS)
-    files["docs/scripts/gen_unit_tables.py"] = 'SYSTEMS = [("N_mm_s", "a", "b")]\n'
-    found = _lint(tmp_path, files)
-    assert len(found) == 2 and all("docs_tables" in f for f in found), found
+    files[INIT] = _init(["N_m_s", "kN_m_s"], extra="\nSee ``N_mm_s`` for the default.\n")
+    _only(_lint(tmp_path, files), "package_doc", "N_mm_s", f"{INIT}:5")
 
 
-def test_flags_missing_stub_once_stubs_exist(tmp_path):
+def test_consistency_missing_is_flagged_at_the_list_line(tmp_path):
     files = _files(SYSTEMS)
-    del files["src/baseUnits/systems/kN_m_s.pyi"]
-    _only(_lint(tmp_path, files), "stub", "kN_m_s")
+    files[CONSISTENCY] = _consistency([_row("N_mm_s"), _row("N_m_s")])
+    _only(_lint(tmp_path, files), "consistency", "kN_m_s", f"{CONSISTENCY}:5")
 
 
-def test_no_stub_check_before_the_tree_has_stubs(tmp_path):
-    files = {k: v for k, v in _files(SYSTEMS).items() if not k.endswith(".pyi")}
-    assert _lint(tmp_path, files) == []
-
-
-# ------------------------------------------------------ holes that must hold
-def test_word_boundary_kN_m_s_does_not_satisfy_N_m_s(tmp_path):
+def test_docs_tables_reads_only_the_first_item_of_a_row(tmp_path):
+    """A label that happens to equal a system name does not register it."""
     files = _files(SYSTEMS)
-    files["docs/architecture.md"] = "Available: `N_mm_s`, `kN_m_s`.\n"
-    _only(_lint(tmp_path, files), "architecture", "N_m_s")
+    files[TABLES] = 'SYSTEMS = [("N_mm_s", "kN_m_s", "x"), ("N_m_s", "a", "b")]\n'
+    _only(_lint(tmp_path, files), "docs_tables", "kN_m_s", f"{TABLES}:1")
 
 
 def test_commented_out_entry_does_not_count(tmp_path):
     files = _files(SYSTEMS)
-    files["scripts/gen_stubs.py"] = 'SYSTEMS = [\n    "N_mm_s",\n    "N_m_s",\n    # "kN_m_s",\n]\n'
-    _only(_lint(tmp_path, files), "gen_stubs", "kN_m_s")
+    files[TABLES] = 'SYSTEMS = [\n    "N_mm_s",\n    "N_m_s",\n    # "kN_m_s",\n]\n'
+    _only(_lint(tmp_path, files), "docs_tables", "kN_m_s", f"{TABLES}:1")
 
 
-# ------------------------------------------------ unreadable -> stay silent
-def test_unreadable_shape_is_skipped(tmp_path):
-    """NATURAL_BASES keyed by (force, length) tuples, as before 47b6682."""
+# ------------------------------------ unreadable site -> a finding, not silence
+@pytest.mark.parametrize(
+    "site,rel", [("consistency", CONSISTENCY), ("docs_tables", TABLES), ("package_doc", INIT)]
+)
+def test_missing_python_site_file_is_a_finding(tmp_path, site, rel):
     files = _files(SYSTEMS)
-    files["test/test_consistency.py"] = (
-        "SYSTEMS = [" + ", ".join(f'("{n}", "mm", "N", "s")' for n in SYSTEMS) + "]\n"
-        'NATURAL_BASES = {("N", "mm"): ("MPa", "mJ", "mJ_s")}\n'
-    )
-    assert _lint(tmp_path, files) == []
+    del files[rel]
+    _unreadable(_lint(tmp_path, files), site, f"{rel}:1")
 
 
-def test_missing_site_file_or_variable_is_skipped(tmp_path):
+def test_missing_readme_is_a_finding(tmp_path):
     files = _files(SYSTEMS)
-    del files["docs/scripts/gen_unit_tables.py"]
-    files["scripts/gen_stubs.py"] = "NAMES = []\n"
-    assert _lint(tmp_path, files) == []
+    del files[README]
+    _unreadable(_lint(tmp_path, files), "readme", "README.md:1")
+
+
+def test_missing_variable_is_a_finding(tmp_path):
+    files = _files(SYSTEMS)
+    files[TABLES] = "NAMES = []\n"
+    _unreadable(_lint(tmp_path, files), "docs_tables", f"{TABLES}:1")
+
+
+def test_concatenated_list_is_a_finding(tmp_path):
+    """Review finding 2: `SYSTEMS = _EXTRA + [...]` used to pass silently."""
+    files = _files(SYSTEMS)
+    files[TABLES] = f"_EXTRA = []\nSYSTEMS = _EXTRA + {SYSTEMS!r}\n"
+    _unreadable(_lint(tmp_path, files), "docs_tables", f"{TABLES}:2")
+
+
+def test_one_non_literal_entry_makes_the_site_unreadable(tmp_path):
+    files = _files(SYSTEMS)
+    files[TABLES] = 'NAME = "kN_m_s"\nSYSTEMS = ["N_mm_s", "N_m_s", NAME]\n'
+    _unreadable(_lint(tmp_path, files), "docs_tables", f"{TABLES}:2")
+
+
+@pytest.mark.parametrize(
+    "later",
+    ['SYSTEMS.append("x")', "SYSTEMS += []", "SYSTEMS = []"],
+)
+def test_list_modified_after_assignment_is_a_finding(tmp_path, later):
+    files = _files(SYSTEMS)
+    files[TABLES] = f"SYSTEMS = {SYSTEMS!r}\n{later}\n"
+    _unreadable(_lint(tmp_path, files), "docs_tables", f"{TABLES}:2")
+
+
+def test_syntax_error_is_a_finding(tmp_path):
+    files = _files(SYSTEMS)
+    files[CONSISTENCY] = "SYSTEMS = [\n"
+    _unreadable(_lint(tmp_path, files), "consistency", f"{CONSISTENCY}:1")
+
+
+def test_invalid_utf8_is_a_finding(tmp_path):
+    files: dict = _files(SYSTEMS)
+    files[README] = b"## Available systems\n\n- `baseUnits.systems.N_mm_s` \xff\n"
+    _unreadable(_lint(tmp_path, files), "readme", "README.md:1")
+
+
+def test_readme_without_section_or_entries_is_a_finding(tmp_path):
+    files = _files(SYSTEMS)
+    files[README] = "# baseUnits\n\n## Systems\n\n- `baseUnits.systems.N_mm_s`\n"
+    _unreadable(_lint(tmp_path, files), "readme", "README.md:1")
+    files[README] = "# baseUnits\n\n## Available systems\n\nSee the docs.\n"
+    _unreadable(_lint(tmp_path / "b", files), "readme", "README.md:3")
+
+
+def test_docstring_without_the_systems_paragraph_is_a_finding(tmp_path):
+    files = _files(SYSTEMS)
+    files[INIT] = '"""baseUnits.\n\nNothing about systems here.\n"""\n'
+    _unreadable(_lint(tmp_path, files), "package_doc", f"{INIT}:1")
+    files[INIT] = "X = 1\n"
+    _unreadable(_lint(tmp_path / "b", files), "package_doc", f"{INIT}:1")
 
 
 # ------------------------------------------------------------------- waivers
-def _waive(files: dict[str, str], system: str, comment: str) -> None:
+def _waive(files: dict, system: str, comment: str) -> None:
     files[f"src/baseUnits/systems/{system}.py"] += comment + "\n"
+
+
+REASON = "experimental, not advertised"
 
 
 def test_waiver_with_reason_suppresses_one_site(tmp_path):
     files = _files(SYSTEMS)
-    files["README.md"] = "- `baseUnits.systems.N_mm_s`\n- `baseUnits.systems.N_m_s`\n"
-    _waive(files, "kN_m_s", "# baseunits-lint: registry-ok readme experimental, not advertised")
+    files[README] = _readme(["N_mm_s", "N_m_s"])
+    _waive(files, "kN_m_s", f"# baseunits-lint: registry-ok readme {REASON}")
     assert _lint(tmp_path, files) == []
 
 
@@ -183,12 +278,12 @@ def test_waiver_with_reason_suppresses_one_site(tmp_path):
     "comment,expected",
     [
         ("# baseunits-lint: registry-ok readme short", "needs a reason"),
-        ("# baseunits-lint: registry-ok readmee experimental, not advertised", "unknown site"),
+        (f"# baseunits-lint: registry-ok readmee {REASON}", "unknown site"),
     ],
 )
 def test_bad_waiver_is_a_finding_and_does_not_suppress(tmp_path, comment, expected):
     files = _files(SYSTEMS)
-    files["README.md"] = "- `baseUnits.systems.N_mm_s`\n- `baseUnits.systems.N_m_s`\n"
+    files[README] = _readme(["N_mm_s", "N_m_s"])
     _waive(files, "kN_m_s", comment)
     found = _lint(tmp_path, files)
     assert len(found) == 2, found
@@ -198,22 +293,57 @@ def test_bad_waiver_is_a_finding_and_does_not_suppress(tmp_path, comment, expect
 
 def test_stale_waiver_is_a_finding(tmp_path):
     files = _files(SYSTEMS)
-    _waive(files, "kN_m_s", "# baseunits-lint: registry-ok readme experimental, not advertised")
+    _waive(files, "kN_m_s", f"# baseunits-lint: registry-ok readme {REASON}")
     found = _lint(tmp_path, files)
     assert len(found) == 1 and "stale registry waiver" in found[0], found
 
 
+def test_duplicate_waiver_is_a_finding(tmp_path):
+    files = _files(SYSTEMS)
+    files[README] = _readme(["N_mm_s", "N_m_s"])
+    _waive(files, "kN_m_s", f"# baseunits-lint: registry-ok readme {REASON}")
+    _waive(files, "kN_m_s", f"# baseunits-lint: registry-ok readme {REASON} again")
+    found = _lint(tmp_path, files)
+    assert len(found) == 1 and "duplicate registry waiver" in found[0], found
+
+
+def test_waiver_text_inside_a_docstring_is_not_a_waiver(tmp_path):
+    files = _files(SYSTEMS)
+    files[README] = _readme(["N_mm_s", "N_m_s"])
+    files["src/baseUnits/systems/kN_m_s.py"] = (
+        f'"""kN_m_s.\n\n# baseunits-lint: registry-ok readme {REASON}\n"""\n'
+    )
+    _only(_lint(tmp_path, files), "readme", "kN_m_s", "README.md:3")
+
+
+def test_waiver_for_an_unreadable_site_cannot_hide_it(tmp_path):
+    """Review finding 3: the site finding is still reported."""
+    files = _files(SYSTEMS)
+    del files[README]
+    _waive(files, "kN_m_s", f"# baseunits-lint: registry-ok readme {REASON}")
+    _unreadable(_lint(tmp_path, files), "readme", "README.md:1")
+
+
+def test_module_that_cannot_be_tokenized_is_a_finding(tmp_path):
+    files = _files(SYSTEMS)
+    files["src/baseUnits/systems/kN_m_s.py"] = '"""unterminated\n'
+    found = _lint(tmp_path, files)
+    assert len(found) == 1 and "cannot tokenize" in found[0], found
+
+
 # ---------------------------------------------------------------------- CLI
 def test_main_exit_codes(tmp_path, capsys):
-    good = tmp_path / "good"
-    _lint(good, _files(SYSTEMS))
+    good = _write(tmp_path / "good", _files(SYSTEMS))
     assert cq.main(["--root", str(good)]) == 0
 
-    bad = tmp_path / "bad"
     files = _files(SYSTEMS)
-    files["README.md"] = ""
-    _lint(bad, files)
+    files[README] = _readme(["N_mm_s"])
+    bad = _write(tmp_path / "bad", files)
     assert cq.main(["--root", str(bad)]) == 1
+
+    only_modules = {k: v for k, v in _files(SYSTEMS).items() if "/systems/" in k}
+    dark = _write(tmp_path / "dark", only_modules)
+    assert cq.main(["--root", str(dark)]) == 1  # all four sites missing
 
     assert cq.main(["--root", str(tmp_path / "empty")]) == 2
     capsys.readouterr()

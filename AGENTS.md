@@ -156,17 +156,27 @@ private.
 
 ### Adding a system: the registration sites drift
 
-A system is listed in eight places. The list and the guide
-`baseunits-new-system` hold the full set.
+Several files name each system. The guide `baseunits-new-system` has the full
+checklist.
 
 - **The history.** At `862b7e0`, 8 system modules existed, but `README.md`
   listed 4 and the package docstring listed 3. `d1a655f` fixed both lists.
-  `docs/architecture.md` still lists only 4 systems. Every commit that has
+  `docs/architecture.md` kept its own list of 4 systems. Every commit that
   added a system missed it: `49d93d7`, `6a4e4a6`, `47b6682`, and PR #3
   (`ab8189a`), whose own description said "Registered in every place existing
-  systems are listed".
-- **Enforcement.** Rule Q1 of `scripts/check_quirk_patterns.py` checks every
-  site.
+  systems are listed". PR #6 replaces that list with a pointer to the
+  generated Systems page.
+- **The rule.** Do not add another hand-maintained list of systems to a
+  document. Point to the Systems page instead, which
+  `docs/scripts/gen_unit_tables.py` generates.
+- **Enforcement.** Rule Q1 of `scripts/check_quirk_patterns.py` checks the four
+  lists that must stay hand-maintained:
+  - `SYSTEMS` in `test/test_consistency.py`
+  - `SYSTEMS` in `docs/scripts/gen_unit_tables.py`
+  - the package docstring
+  - the README "Available systems" list
+
+  A missing `NATURAL_BASES` entry already fails pytest with a `KeyError`.
 
 ### CHANGELOG entries get skipped
 

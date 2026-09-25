@@ -15,8 +15,8 @@ description: >
 Read this before adding, renaming or removing a module under
 `src/baseUnits/systems/`. Each item names the `AGENTS.md` heading to grep for;
 read that entry when the item applies. Items marked **[lint]** are enforced by
-`python scripts/check_quirk_patterns.py` (rule Q1). For the reason all eight
-sites matter, see AGENTS.md "Adding a system: the registration sites drift".
+`python scripts/check_quirk_patterns.py` (rule Q1). For why these lists
+drift, see AGENTS.md "Adding a system: the registration sites drift".
 
 ## The module
 
@@ -33,25 +33,30 @@ sites matter, see AGENTS.md "Adding a system: the registration sites drift".
 - [ ] Is a new primitive needed? Then add the unit first, following
       `.claude/skills/baseunits-change-factors/SKILL.md`.
 
-## Register it in all eight sites (PR #3's list plus the one it missed)
+## Register it everywhere the systems are listed
 
-- [ ] **[lint]** `src/baseUnits/systems/<name>.pyi`: run
-      `PYTHONPATH=src python scripts/gen_stubs.py` from the repo root, after
-      adding the name to its `SYSTEMS` (next item). AGENTS.md rule 4.
-- [ ] **[lint]** `scripts/gen_stubs.py`: `SYSTEMS`.
-- [ ] **[lint]** `test/test_consistency.py`: a `SYSTEMS` row (exactly one of
-      force or mass, matching your `make_system` call) AND a `NATURAL_BASES`
-      entry (`None` where the natural pressure, energy or power base has no
-      name). Leave it out and the system escapes "the one rule".
-- [ ] **[lint]** `docs/scripts/gen_unit_tables.py`: `SYSTEMS` (module, label,
-      prose). `docs/systems.md` is generated from it at build time.
-- [ ] **[lint]** `src/baseUnits/__init__.py`: the module docstring's list.
-- [ ] **[lint]** `README.md`: "Available systems".
-- [ ] **[lint]** `docs/architecture.md`: the mermaid box and "Available out of
-      the box". This is the site every past addition missed.
+- [ ] **[lint]** `test/test_consistency.py`: add a `SYSTEMS` row with exactly
+      one of force or mass, matching your `make_system` call. Leave it out and
+      the system escapes "the one rule".
+- [ ] `test/test_consistency.py`: add a `NATURAL_BASES` entry, with `None`
+      where the natural pressure, energy or power base has no name. Not
+      linted: pytest already fails with a `KeyError` without it.
+- [ ] **[lint]** `docs/scripts/gen_unit_tables.py`: add the module to
+      `SYSTEMS` (module, label, prose). The published Systems page is
+      generated from it at build time.
+- [ ] **[lint]** `src/baseUnits/__init__.py`: the docstring paragraph that
+      names the pre-built systems.
+- [ ] **[lint]** `README.md`: the bullet list under "## Available systems".
+- [ ] Stubs: add the name to `SYSTEMS` in `scripts/gen_stubs.py`, then run
+      `PYTHONPATH=src python scripts/gen_stubs.py` from the repo root to write
+      `systems/<name>.pyi` (AGENTS.md rule 4). Not linted: this has never been
+      missed, and the script calls itself temporary tooling.
 - [ ] `test/test_systems_parity.py`: one hand-written identity test for what
       makes the system distinctive (for example `test_tf_m_s_force_base`).
-      Not linted, but every system has one.
+      Not linted, because it is not a list.
+- [ ] Do not add the system to any other hand-written list. Point readers to
+      the generated Systems page instead; `docs/architecture.md` does this
+      since PR #6.
 
 ## Renaming or removing
 
