@@ -5,7 +5,7 @@ The package has four layers, each doing one job.
 ```mermaid
 flowchart LR
     A[_factors.py<br/>absolute SI dicts] --> B[make_system<br/>L, F, T -> namespace]
-    B --> C[systems/N_mm_s.py<br/>systems/N_m_s.py<br/>systems/kN_m_s.py<br/>systems/kip_in_s.py]
+    B --> C[systems/*.py<br/>one module per system]
     C --> D[baseUnits/__init__.py<br/>default = N_mm_s]
 ```
 
@@ -43,7 +43,9 @@ Each module calls `make_system` once and re-exports the namespace at module
 scope via `globals().update(_ns.__dict__)`, so `from baseUnits.systems.kip_in_s
 import *` puts every named float in the caller's scope.
 
-Available out of the box: `N_mm_s`, `N_m_s`, `kN_m_s`, `kip_in_s`.
+The pre-built systems, each with its full unit table, are listed on the
+[Systems](systems.md) page. That page is generated at build time from
+`docs/scripts/gen_unit_tables.py`, so this page does not repeat the list.
 
 ## Top-level package
 
