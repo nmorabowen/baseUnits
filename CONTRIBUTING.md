@@ -39,7 +39,9 @@ suppress it; if it fails, fix the underlying factor.
 
 ## Style
 
-- `ruff` is the formatter and linter.
+- `ruff` is the formatter and linter. Its version is pinned in the `[dev]`
+  extra and in `.pre-commit-config.yaml`; bump both together
+  (`test/test_ruff_pin.py` checks that they match).
 - Run `ruff check .` and `ruff format .` before submitting.
 - No emojis in code, comments, commits, or docs.
 

@@ -27,6 +27,14 @@ jobs:
       - name: Run tests
         run: pytest -q
 
+      # ruff comes from the [dev] extra, which pins it to the same version as
+      # .pre-commit-config.yaml (test/test_ruff_pin.py keeps them equal).
+      # Different ruff versions format this tree differently.
+      - name: Format check
+        run: |
+          ruff --version
+          ruff format --check .
+
       - name: Lint
         run: ruff check .
 
