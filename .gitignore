@@ -32,3 +32,8 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code session scratch (worktrees, local settings). The task guides
+# under .claude/skills/ are tracked source (see AGENTS.md).
+.claude/*
+!.claude/skills/

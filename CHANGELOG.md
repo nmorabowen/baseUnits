@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   factor to a `Decimal` recomputation from the four exact defining constants
   (1 in = 25.4 mm, 1 lb = 0.45359237 kg, g0 = 9.80665 m/s², 1 lbf = lb·g0), and
   asserting the checked layer matches the float layer for every unit.
+- Contributor and agent tooling, with no change to the library itself:
+  - `AGENTS.md`, which `CLAUDE.md` now points to, holding the working rules,
+    the cross-repo contract and lessons learned.
+  - Two task guides under `.claude/skills/`.
+  - `scripts/check_quirk_patterns.py`, a CI lint that fails when a system
+    module is missing from one of the four hand-maintained lists of the
+    systems.
+
+  See `docs/agent-surface.md`.
 
 ### Changed
 
