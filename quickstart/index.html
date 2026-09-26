@@ -907,7 +907,7 @@
 <h2 id="importing">Importing</h2>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">baseUnits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">BASE</span><span class="p">)</span>   <span class="c1"># &#39;N-mm-tonne-s&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">BASE</span><span class="p">)</span>   <span class="c1"># 'N-mm-tonne-s'</span>
 </code></pre></div></td></tr></table></div>
 <p><code>u.m</code>, <code>u.kN</code>, <code>u.MPa</code>, <code>u.tonne</code>, etc. are plain floats expressed in the
 default base (N-mm-tonne-s).</p>
@@ -981,7 +981,7 @@ pandas columns all see ordinary floats.</p>
 <p>In project code, assert what system you are running in:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">baseUnits</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
-<span class="k">assert</span> <span class="n">u</span><span class="o">.</span><span class="n">BASE</span> <span class="o">==</span> <span class="s2">&quot;N-mm-tonne-s&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;unexpected base: </span><span class="si">{</span><span class="n">u</span><span class="o">.</span><span class="n">BASE</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">u</span><span class="o">.</span><span class="n">BASE</span> <span class="o">==</span> <span class="s2">"N-mm-tonne-s"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"unexpected base: </span><span class="si">{</span><span class="n">u</span><span class="o">.</span><span class="n">BASE</span><span class="si">}</span><span class="s2">"</span>
 </code></pre></div></td></tr></table></div>
 <p>That single assert catches accidental system swaps (someone pasting
 <code>from baseUnits.systems.kip_in_s import *</code> two scopes up).</p>
