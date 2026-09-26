@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Contributor tooling, with no change to the library itself: ruff is pinned to
+  0.15.22 in both the `[dev]` extra (which CI installs) and
+  `.pre-commit-config.yaml`. They previously used three different versions
+  (`ruff>=0.6`, pre-commit `v0.7.4`, and whatever CI installed), which
+  formatted the tree differently. CI now also runs `ruff format --check .`,
+  `scripts/gen_stubs.py` is reformatted to match, and `test/test_ruff_pin.py`
+  keeps the two pins equal.
 - `baseUnits.checked` now derives its conversion factors from `_factors.py`
   instead of hard-coding its own copies. The duplicated copies had drifted to
   four significant figures (`lbf = 4.448`, `kip = 4448.0`, `ksi = 6.895`,
