@@ -7,8 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Nothing here has been released yet, including the breaking changes to the
+default import path and `Quantity` (formerly listed under a `[2.0.0]` heading).
+
 ### Added
 
+- Float-based unit system at the default import path.
+  `baseUnits.<system>` now exposes plain floats whose values are
+  conversion factors relative to the chosen base.
+- `_factors.py` providing the single source of truth for absolute SI
+  factors per dimension.
+- `make_system` helper for assembling systems from any combination of
+  base units.
+- Pre-built systems under `baseUnits.systems`: `N_mm_s`, `N_m_s`,
+  `kN_m_s`, `kip_in_s`.
+- Missing temperature unit `K` now exported alongside the other base
+  units.
 - `psi`, `bar`, `atm`, `lb_per_ft3`, and `rad` to `baseUnits.checked`, which had
   fallen behind the float layer's unit list. `psi` matters for ACI 318 work.
 - `test/test_exact_factors.py`, pinning every inch-pound and gravitational
@@ -40,34 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `kgf_cm2 = 0.09807`, `kgf = 9.807`, `lb = 453.6e-6`), a ~1e-4 relative error
   large enough to move a design-code capacity check. Anyone importing from
   `baseUnits.checked` sees corrected values; the float layer is unaffected.
+- The dimensional-checking `Quantity`, `Unit`, and `Dimension` types
+  moved under `baseUnits.checked`. The default path is now
+  zero-overhead.
 - `ksi`, `psi`, and `lb_per_ft3` in `_factors.py` were truncated a few digits
   short of the nearest double and are now correctly rounded (relative
   corrections of 5e-14, 5e-14, and 2e-12).
 
 ### Removed
 
--
-
-## [2.0.0] - 2025-05-04
-
-### Added
-
-- Float-based unit system at the default import path. `baseUnits.<system>` now
-  exposes plain floats whose values are conversion factors relative to the
-  chosen base.
-- `_factors.py` providing the single source of truth for absolute SI factors
-  per dimension.
-- `make_system` helper for assembling systems from any combination of base
-  units.
-- Pre-built systems under `baseUnits.systems`: `N_mm_s`, `N_m_s`, `kN_m_s`, `kip_in_s`.
-- Missing temperature unit `K` now exported alongside the other base units.
-
-### Changed
-
-- The dimensional-checking `Quantity`, `Unit`, and `Dimension` types moved
-  under `baseUnits.checked`. The default path is now zero-overhead.
-
-### Removed
-
-- Implicit `Quantity` wrapping at module top level. Use `baseUnits.checked`
-  for dimensional verification.
+- Implicit `Quantity` wrapping at module top level. Use
+  `baseUnits.checked` for dimensional verification.
