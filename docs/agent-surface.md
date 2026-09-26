@@ -35,7 +35,7 @@ broken afterwards.
 
 | Written rule / lesson | Written where (when) | Broken again by | Recurrences |
 |---|---|---|---|
-| Add a CHANGELOG entry under `Unreleased` | CONTRIBUTING step 5 and the PR template (`d9b230a`, 2026-05-06) | `49d93d7`, `6a4e4a6`, `47b6682`, `862b7e0` (05-06); `d1a655f` (05-07, edited the released `[2.0.0]` section); `f5574a1`, `bad8554` (PRs #1 and #2, 05-29); `ab8189a` (PR #3, 06-29) | **8** of the 9 commits that changed `src/` since |
+| Add a CHANGELOG entry under `Unreleased` | CONTRIBUTING step 5 and the PR template (`d9b230a`, 2026-05-06) | `49d93d7`, `6a4e4a6`, `47b6682`, `862b7e0` (05-06); `d1a655f` (05-07, edited the `[2.0.0]` section, which was never released; #8 folded it into `Unreleased`); `f5574a1`, `bad8554` (PRs #1 and #2, 05-29); `ab8189a` (PR #3, 06-29) | **8** of the 9 commits that changed `src/` since |
 | Keep `ruff format .` clean | CONTRIBUTING "Style" and the PR template (`d9b230a`) | PR #2 left `scripts/gen_stubs.py` unformatted (it still is); PR #4 needed the fix-up `b87f29d` | **2** (probably ruff version skew; see Rejected approaches) |
 | Every system listed everywhere | `d1a655f` message: "All references in tests, docs, README ... updated"; PR #3: "Registered in every place existing systems are listed" | `docs/architecture.md` was missed by `49d93d7`, `6a4e4a6`, `47b6682` and `ab8189a`; README and the package docstring were missed by the first three (fixed in `d1a655f`) | **4** system additions |
 | `_factors.py` is the single source of truth | `_factors.py` docstring and `docs/architecture.md` (`f9f3fe2`, 2026-05-06) | the checked layer's own four-significant-figure copies, which date from the same commit and were fixed in `a74e3ac` (2026-08-03) | 1 incident; it has not recurred since the lesson was recorded |
@@ -329,10 +329,11 @@ Nothing was rejected.
 ## Findings outside this change (owner's call; nothing changed here)
 
 - **The CHANGELOG is incomplete.** It never records `kgf_m_s`, `dyne_cm_s`,
-  `tf_m_s` or the type stubs. The `[2.0.0]` entry lists four systems and is
-  dated `2025-05-04`, but its commit is from 2026-05-06.
-- **Version mismatch:** `pyproject.toml` says `1.1.0` while the CHANGELOG's
-  latest release is `2.0.0`.
+  `tf_m_s` or the type stubs. The former `[2.0.0]` entry lists four systems and
+  was dated `2025-05-04`, but its commit is from 2026-05-06.
+- **Version mismatch (resolved by PR #8):** 2.0.0 was never tagged or published.
+  The owner kept `pyproject.toml` at `1.1.0` and folded the `[2.0.0]` section
+  into `Unreleased`.
 - **Three ruff versions** (`v0.7.4` in pre-commit, `ruff>=0.6` in `[dev]`,
   latest in CI). Pin one version, then consider adding `ruff format --check .`.
 - **CONTRIBUTING's "Adding a new unit" and "Adding a new system" steps are

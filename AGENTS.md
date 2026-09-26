@@ -132,8 +132,9 @@ private.
   with no ref; apeETABS and apeRobot declare bare `baseUnits`. The ape-setup
   venv lock pins one commit (`7bd4c8f` as of 2026-09-25, which predates the
   #4 factor fix), so the office environments get a fix only when that lock is
-  bumped. `pyproject.toml` says `1.1.0` while the CHANGELOG's latest release is
-  `2.0.0`.
+  bumped. Nothing has been released: there are no tags and nothing on PyPI.
+  `pyproject.toml` says `1.1.0`, and the CHANGELOG keeps every change under
+  `Unreleased`. PR #8 folded the never-released `2.0.0` section into it.
 - **Before merging a change to a value or a name,** run the consumers' test
   suites, as PR #4 did (apeSteel, apeETABS, apeConcrete), and report the
   results in the PR.
@@ -182,8 +183,8 @@ checklist.
 
 `CONTRIBUTING.md` and the PR template have required an `Unreleased` entry since
 `d9b230a` (2026-05-06). Of the 9 commits that changed `src/` after that, only
-`a74e3ac` added one. `d1a655f` rewrote the already-released `[2.0.0]` section
-instead. As a result, the CHANGELOG never mentions `kgf_m_s`, `dyne_cm_s`,
+`a74e3ac` added one. `d1a655f` rewrote the `[2.0.0]` section instead. That
+section was never released, and PR #8 folded it into `Unreleased`. As a result, the CHANGELOG never mentions `kgf_m_s`, `dyne_cm_s`,
 `tf_m_s` or the type stubs. This is not linted, because it depends on the diff
 and has no fix commit to test against.
 
