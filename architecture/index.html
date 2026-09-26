@@ -888,7 +888,7 @@
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>flowchart LR
     A[_factors.py&lt;br/&gt;absolute SI dicts] --&gt; B[make_system&lt;br/&gt;L, F, T -&gt; namespace]
-    B --&gt; C[systems/N_mm_s.py&lt;br/&gt;systems/N_m_s.py&lt;br/&gt;systems/kN_m_s.py&lt;br/&gt;systems/kip_in_s.py]
+    B --&gt; C[systems/*.py&lt;br/&gt;one module per system]
     C --&gt; D[baseUnits/__init__.py&lt;br/&gt;default = N_mm_s]
 </code></pre></div></td></tr></table></div>
 <h2 id="_factorspy-single-source-of-truth"><code>_factors.py</code> — single source of truth</h2>
@@ -920,7 +920,9 @@ constrain the system and break Newton's second law.</p>
 <p>Each module calls <code>make_system</code> once and re-exports the namespace at module
 scope via <code>globals().update(_ns.__dict__)</code>, so <code>from baseUnits.systems.kip_in_s
 import *</code> puts every named float in the caller's scope.</p>
-<p>Available out of the box: <code>N_mm_s</code>, <code>N_m_s</code>, <code>kN_m_s</code>, <code>kip_in_s</code>.</p>
+<p>The pre-built systems, each with its full unit table, are listed on the
+<a href="../systems/">Systems</a> page. That page is generated at build time from
+<code>docs/scripts/gen_unit_tables.py</code>, so this page does not repeat the list.</p>
 <h2 id="top-level-package">Top-level package</h2>
 <p><code>baseUnits/__init__.py</code> re-exports the default system (<code>N_mm_s</code>) at the top
 level, alongside the <code>systems</code> and <code>checked</code> submodules. <code>import baseUnits as
