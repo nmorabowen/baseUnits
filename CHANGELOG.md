@@ -60,6 +60,9 @@ default import path and `Quantity` (formerly listed under a `[2.0.0]` heading).
 - `ksi`, `psi`, and `lb_per_ft3` in `_factors.py` were truncated a few digits
   short of the nearest double and are now correctly rounded (relative
   corrections of 5e-14, 5e-14, and 2e-12).
+- `docs/architecture.md` now points to the generated Systems page instead of
+  keeping its own list, which named only four of the seven pre-built systems
+  (`kgf_m_s`, `tf_m_s`, and `dyne_cm_s` were missing).
 
 ### Removed
 
